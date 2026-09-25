@@ -1,6 +1,50 @@
 MoneyLens — Personal Capital & Scenario Decision Simulator
 Explore your finances. Test your decisions. Plan your next move.
 MoneyLens is an interactive data visualization and personal finance decision-support simulator. It models the compounding trade-offs between day-to-day discretionary spending, debt amortization burdens (EMI), emergency survival runways, and multi-year wealth accumulation.
+The Core Problem & Decision Scenario
+When planning personal budgets, individuals often fail to recognize how incremental changes to lifestyle spending (dining out, subscription creep, leisure) compound over time or delay critical milestones like debt freedom and homeownership.
+The Decision Tested:
+"If I adjust my discretionary spending by ₹5,000 / $200 per month, how does that immediate trade-off impact my emergency runway, debt payoff timeline, and 12-month net worth?"
+Key Features
+1. Dual-Synchronized Interaction Design
+Drag-and-drop sliders paired with synchronized direct numeric input fields (<input type="number">) for precision modeling.
+Native multi-currency switching ($ USD / ₹ INR) with calibrated dynamic brackets.
+2. Signature "What-If" Decision Matrix
+Directly compares your Current Baseline against a Simulated Scenario across five metrics:
+ Monthly Surplus / Deficit
+ 12-Month Cash Accumulated
+ Emergency Survival Runway
+ Milestone Completion ETA
+ 12-Month Net Worth
+3. Mathematically Rigorous Balance Sheet
+Asset Segregation: Emergency reserves are tracked independently from volatile invested equity portfolios.
+Negative Amortization Safeguard: Prevents artificial debt reduction when monthly EMI fails to cover accrued interest (Math.max(0, payment - interest)).
+Unified Return Model: A single blended asset-allocation CAGR drives both the 12-month trajectory and multi-year forecasts.
+4. Dynamic Visual Analytics (Chart.js)
+Expenditure Donut Chart: Visualizes proportional distribution between Fixed Needs, Lifestyle Wants, Prepayments, and Free Surplus.
+12-Month Financial Trajectory: Dual-curved line chart tracking cumulative liquid reserves against amortizing liabilities.
+50/30/20 Reference Benchmark: Real-time segmented adherence comparison.
+5. Resilient Macro Stress-Test Lab
+Simulates stagflation shocks (inflation spikes up to +30% combined with salary reductions up to -50%) to evaluate survival runway under economic stress.
+Tech Stack & Architecture
+Markup & Layout: HTML5, Tailwind CSS (via CDN)
+Charts & Data Viz: Chart.js
+Micro-Interactions: Tone.js (synthesized acoustic feedback)
+Typography: Syne (Display), Plus Jakarta Sans (UI), JetBrains Mono (Financial Tabular Data)
+Architecture: Zero-dependency, single-file client-side application (index.html)
+Getting Started
+No build tools or package managers required.
+Clone the repository:
+git clone https://github.com/vamshiJanagam/Money-Lens.git
+
+
+Open index.html in any modern web browser, or visit the live deployment:
+👉 https://vamshijanagam.github.io/Money-Lens/
+License
+This project is licensed under the MIT License.
+MoneyLens — Personal Capital & Scenario Decision Simulator
+Explore your finances. Test your decisions. Plan your next move.
+MoneyLens is an interactive data visualization and personal finance decision-support simulator. It models the compounding trade-offs between day-to-day discretionary spending, debt amortization burdens (EMI), emergency survival runways, and multi-year wealth accumulation.
 🎯 The Core Problem & Decision Scenario
 When planning personal budgets, individuals often fail to recognize how incremental changes to lifestyle spending (dining out, subscription creep, leisure) compound over time or delay critical milestones like debt freedom and homeownership.
 The Decision Tested:
