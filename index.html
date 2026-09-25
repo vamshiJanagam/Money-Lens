@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneyLens — Explore your finances. Test your decisions. Plan your next move.</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Tone.js for soft micro-interaction acoustics -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <!-- Google Fonts: Syne (Display), Plus Jakarta Sans (Interface), JetBrains Mono (Numbers) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Syne"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            brand: {
+              mint: 'var(--brand-mint)',
+              mintHover: 'var(--brand-mint-hover)',
+              teal: '#14B8A6',
+              sky: 'var(--brand-sky)',
+              amber: 'var(--brand-amber)',
+              rose: 'var(--brand-rose)'
+            },
+            surface: {
+              base: 'var(--bg-base)',
+              card: 'var(--bg-card)',
+              cardHover: 'var(--bg-card-hover)',
+              elevated: 'var(--bg-elevated)',
+              border: 'var(--border-color)',
+              borderSubtle: 'var(--border-subtle)',
+              input: 'var(--bg-input)'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* =========================================================
+       DYNAMIC THEME TOKENS: REFINED DAY MODE & OBSIDIAN DARK
+       ========================================================= */
+    :root {
+      /* DAY / LIGHT MODE: Clean, High-Contrast Editorial FinTech */
+      --bg-base: #F8FAFC;
+      --bg-surface: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-card-hover: #F1F5F9;
+      --bg-elevated: #F1F5F9;
+      --bg-input: #FFFFFF;
+      --border-color: rgba(15, 23, 42, 0.09);
+      --border-subtle: rgba(15, 23, 42, 0.05);
+
+      --text-main: #0F172A;
+      --text-body: #1E293B;
+      --text-muted: #475569;
+      --text-dim: #64748B;
+
+      --brand-mint: #059669;
+      --brand-mint-hover: #047857;
+      --brand-sky: #0284C7;
+      --brand-amber: #D97706;
+      --brand-rose: #E11D48;
+
+      --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+      --whatif-gradient: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, #FFFFFF 100%);
+      --whatif-border: rgba(5, 150, 105, 0.25);
+      --whatif-box: #F8FAFC;
+      --whatif-box-border: rgba(15, 23, 42, 0.08);
+
+      --slider-track: #E2E8F0;
+      --slider-track-border: #CBD5E1;
+      --slider-thumb-bg: #059669;
+      --slider-thumb-ring: rgba(5, 150, 105, 0.25);
+    }
+
+    html.dark {
+      /* OBSIDIAN DARK MODE: Crisp, Immersive Studio FinTech */
+      --bg-base: #080A0F;
+      --bg-surface: #0E121C;
+      --bg-card: #0F121C;
+      --bg-card-hover: #141824;
+      --bg-elevated: #171B29;
+      --bg-input: #0B0E17;
+      --border-color: #202637;
+      --border-subtle: #181C2A;
+
+      --text-main: #FFFFFF;
+      --text-body: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+
+      --brand-mint: #10B981;
+      --brand-mint-hover: #059669;
+      --brand-sky: #38BDF8;
+      --brand-amber: #F59E0B;
+      --brand-rose: #F43F5E;
+
+      --card-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.4);
+      --whatif-gradient: linear-gradient(180deg, #111728 0%, #0E1322 50%, #0A0D17 100%);
+      --whatif-border: #2A344F;
+      --whatif-box: #080B13;
+      --whatif-box-border: #1F273D;
+
+      --slider-track: #1C2233;
+      --slider-track-border: #232A3E;
+      --slider-thumb-bg: #F8FAFC;
+      --slider-thumb-ring: rgba(56, 189, 248, 0.35);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-body);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .font-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.025em;
+    }
+
+    .hairline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s ease;
+    }
+
+    .whatif-container {
+      background: var(--whatif-gradient);
+      border: 1px solid var(--whatif-border);
+      box-shadow: var(--card-shadow);
+    }
+
+    .whatif-subbox {
+      background: var(--whatif-box);
+      border: 1px solid var(--whatif-box-border);
+    }
+
+    /* Range Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      height: 28px;
+      margin: 0;
+      width: 100%;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--slider-track);
+      border: 1px solid var(--slider-track-border);
+      transition: background 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: var(--slider-thumb-bg);
+      margin-top: -6.5px;
+      border: 2px solid var(--bg-surface);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    input[type=range]:hover::-webkit-slider-thumb {
+      transform: scale(1.18);
+      box-shadow: 0 0 0 4px var(--slider-thumb-ring);
+    }
+    input[type=range]:active::-webkit-slider-thumb {
+      transform: scale(1.24);
+      box-shadow: 0 0 0 5px var(--slider-thumb-ring);
+    }
+
+    input[type=range]::-moz-range-track {
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--slider-track);
+      border: 1px solid var(--slider-track-border);
+    }
+    input[type=range]::-moz-range-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: var(--slider-thumb-bg);
+      border: 2px solid var(--bg-surface);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Delta Badges */
+    .delta-badge-pos {
+      background: rgba(16, 185, 129, 0.14);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    html.dark .delta-badge-pos {
+      color: #34D399;
+      border-color: rgba(16, 185, 129, 0.28);
+    }
+    .delta-badge-neg {
+      background: rgba(244, 63, 94, 0.14);
+      color: #E11D48;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+    html.dark .delta-badge-neg {
+      color: #FB7185;
+      border-color: rgba(244, 63, 94, 0.28);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen antialiased selection:bg-brand-mint/20 font-sans transition-colors duration-200">
+
+  <!-- Header Bar -->
+  <header class="sticky top-0 z-40 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-surface-border py-3 px-4 sm:px-8">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand & Tagline -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-brand-mint/15 text-brand-mint border border-brand-mint/30 flex items-center justify-center shadow-sm shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 8v6m-3-3h6" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-bold text-base tracking-tight text-[var(--text-main)]">MoneyLens</h1>
+            <span class="text-[9px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-surface-elevated text-[var(--text-dim)] border border-surface-border">Scenario Lab</span>
+          </div>
+          <p class="text-[11px] text-[var(--text-dim)]">Explore your finances. Test your decisions. Plan your next move.</p>
+        </div>
+      </div>
+
+      <!-- Quick KPI Strip in Header -->
+      <div class="hidden lg:flex items-center gap-6 px-4 py-2 rounded-xl bg-surface-card border border-surface-border text-xs">
+        <div>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Free Surplus</span>
+          <span id="nav-cashflow" class="font-num font-bold text-brand-mint text-sm">₹0</span>
+        </div>
+        <div class="w-px h-6 bg-surface-border"></div>
+        <div>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Wealth Allocation Rate</span>
+          <span id="nav-savings-rate" class="font-num font-bold text-brand-sky text-sm">0%</span>
+        </div>
+        <div class="w-px h-6 bg-surface-border"></div>
+        <div>
+          <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Emergency Reserve</span>
+          <span id="nav-runway" class="font-num font-bold text-brand-amber text-sm">0.0 mos</span>
+        </div>
+      </div>
+
+      <!-- Header Controls: Currency, Audio, Theme, Export -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center p-0.5 rounded-xl bg-surface-card border border-surface-border text-xs font-semibold">
+          <button id="curr-btn-usd" onclick="setCurrency('USD')" class="px-3 py-1 rounded-lg transition text-[var(--text-muted)] hover:text-[var(--text-main)] font-mono">$ USD</button>
+          <button id="curr-btn-inr" onclick="setCurrency('INR')" class="px-3 py-1 rounded-lg transition bg-brand-mint text-white dark:text-slate-950 font-bold font-mono">₹ INR</button>
+        </div>
+
+        <button id="audio-toggle" onclick="toggleAudio()" title="Toggle Sound FX" class="p-2 rounded-xl bg-surface-card border border-surface-border text-[var(--text-muted)] hover:text-[var(--text-main)] transition">
+          <svg id="icon-sound-on" class="w-4 h-4 text-brand-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/>
+          </svg>
+          <svg id="icon-sound-off" class="w-4 h-4 text-[var(--text-dim)] hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5L6 9H2v6h4l5 4V5zm12 4l-6 6m0-6l6 6"/>
+          </svg>
+        </button>
+
+        <button onclick="toggleTheme()" title="Switch Light/Dark Theme" class="p-2 rounded-xl bg-surface-card border border-surface-border text-[var(--text-muted)] hover:text-[var(--text-main)] transition">
+          <svg id="icon-theme-sun" class="w-4 h-4 text-brand-amber hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          </svg>
+          <svg id="icon-theme-moon" class="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+
+        <button onclick="exportFinancialBrief()" class="px-3 py-1.5 rounded-xl bg-surface-card hover:bg-surface-elevated text-[var(--text-body)] text-xs font-semibold border border-surface-border transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-[var(--text-dim)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          </svg>
+          <span>Export</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Profiles & Action Subheader Strip -->
+  <section class="max-w-7xl mx-auto pt-6 pb-2 px-4 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 rounded-2xl hairline-card">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-[11px] text-[var(--text-dim)] font-semibold uppercase tracking-wider mr-1 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          Profiles:
+        </span>
+        <button onclick="applyArchetype('frugal')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-surface-elevated hover:bg-[var(--bg-card-hover)] text-[var(--text-body)] border border-surface-border transition">Frugal Saver</button>
+        <button onclick="applyArchetype('urban_pro')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-surface-elevated hover:bg-[var(--bg-card-hover)] text-[var(--text-body)] border border-surface-border transition">Urban Professional</button>
+        <button onclick="applyArchetype('debt_crusher')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-surface-elevated hover:bg-[var(--bg-card-hover)] text-[var(--text-body)] border border-surface-border transition">Debt Paydown Focus</button>
+        <button onclick="applyArchetype('balanced_50_30_20')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-surface-elevated hover:bg-[var(--bg-card-hover)] text-[var(--text-body)] border border-surface-border transition">50/30/20 Baseline</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="toggleStressModal()" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-brand-amber/10 text-brand-amber hover:bg-brand-amber/20 border border-brand-amber/30 transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          Stress Test Matrix
+        </button>
+        <button onclick="resetDefaults()" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-surface-elevated hover:bg-brand-rose/10 text-brand-rose border border-surface-border transition flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reset
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-8">
+
+    <!-- DEFICIT WARNING BANNER -->
+    <div id="deficit-alert-banner" class="hidden p-4 rounded-2xl bg-brand-rose/10 border border-brand-rose/30 text-brand-rose flex items-start sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2 rounded-xl bg-brand-rose/20 text-brand-rose">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xs font-bold text-brand-rose uppercase tracking-wider">Cash Flow Deficit Warning</h2>
+          <p id="deficit-alert-text" class="text-xs text-[var(--text-muted)] mt-0.5">Outflows exceed monthly income. Capital reserves are being drained.</p>
+        </div>
+      </div>
+      <button onclick="autoBalanceDeficit()" class="px-3.5 py-1.5 rounded-xl bg-brand-rose text-white font-bold text-xs shrink-0 hover:opacity-90 transition shadow-sm">
+        Auto-Balance Wants
+      </button>
+    </div>
+
+    <!-- NEGATIVE AMORTIZATION BANNER -->
+    <div id="amortization-shortfall-banner" class="hidden p-3.5 rounded-2xl bg-brand-amber/10 border border-brand-amber/30 text-brand-amber flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2.5">
+        <svg class="w-5 h-5 text-brand-amber shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+        </svg>
+        <span><strong class="font-bold">Debt Alert:</strong> Monthly debt payment is less than monthly accrued interest. Principal balance will not decrease until payments exceed monthly interest.</span>
+      </div>
+    </div>
+
+    <!-- SECTION 1: BALANCE SHEET FOUNDATION -->
+    <section class="p-6 rounded-2xl hairline-card space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-border pb-4">
+        <div>
+          <h2 class="font-display text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-sky" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+            </svg>
+            Balance Sheet Starting Foundation
+          </h2>
+          <p class="text-[11px] text-[var(--text-dim)] mt-0.5">Explicit asset classes prevent conflating liquid emergency reserves with long-term invested capital.</p>
+        </div>
+        <span class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-surface-elevated text-[var(--text-dim)] border border-surface-border">Independent Asset Segregation</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+        
+        <!-- Emergency Cash Reserve -->
+        <div class="p-4 rounded-xl bg-surface-elevated border border-surface-border space-y-1.5 transition-colors hover:border-surface-borderSubtle">
+          <label for="input-bal-emergency" class="text-[var(--text-muted)] font-semibold tracking-wide flex items-center justify-between">
+            <span>Emergency Reserve</span>
+            <span class="text-[10px] text-brand-mint font-mono uppercase font-bold">Liquid</span>
+          </label>
+          <div class="flex items-center gap-1.5 bg-[var(--bg-input)] border border-surface-border px-3 py-1.5 rounded-lg focus-within:border-brand-mint transition">
+            <span class="currency-prefix text-[var(--text-dim)] font-mono font-bold">₹</span>
+            <input type="number" id="input-bal-emergency" oninput="updateBalanceSheet('emergencyReserve', this.value)" class="w-full bg-transparent font-num text-brand-mint font-bold text-sm focus:outline-none">
+          </div>
+          <span class="text-[10px] text-[var(--text-dim)]">Covers essential survival runway</span>
+        </div>
+
+        <!-- Cash Savings Account -->
+        <div class="p-4 rounded-xl bg-surface-elevated border border-surface-border space-y-1.5 transition-colors hover:border-surface-borderSubtle">
+          <label for="input-bal-savings" class="text-[var(--text-muted)] font-semibold tracking-wide flex items-center justify-between">
+            <span>General Cash Savings</span>
+            <span class="text-[10px] text-brand-sky font-mono uppercase font-bold">Bank</span>
+          </label>
+          <div class="flex items-center gap-1.5 bg-[var(--bg-input)] border border-surface-border px-3 py-1.5 rounded-lg focus-within:border-brand-sky transition">
+            <span class="currency-prefix text-[var(--text-dim)] font-mono font-bold">₹</span>
+            <input type="number" id="input-bal-savings" oninput="updateBalanceSheet('cashSavings', this.value)" class="w-full bg-transparent font-num text-brand-sky font-bold text-sm focus:outline-none">
+          </div>
+          <span class="text-[10px] text-[var(--text-dim)]">Short-term liquid checking / savings</span>
+        </div>
+
+        <!-- Invested Portfolio -->
+        <div class="p-4 rounded-xl bg-surface-elevated border border-surface-border space-y-1.5 transition-colors hover:border-surface-borderSubtle">
+          <label for="input-bal-investments" class="text-[var(--text-muted)] font-semibold tracking-wide flex items-center justify-between">
+            <span>Invested Portfolio</span>
+            <span class="text-[10px] text-purple-600 dark:text-purple-400 font-mono uppercase font-bold">Equities & Bonds</span>
+          </label>
+          <div class="flex items-center gap-1.5 bg-[var(--bg-input)] border border-surface-border px-3 py-1.5 rounded-lg focus-within:border-purple-400 transition">
+            <span class="currency-prefix text-[var(--text-dim)] font-mono font-bold">₹</span>
+            <input type="number" id="input-bal-investments" oninput="updateBalanceSheet('investedPortfolio', this.value)" class="w-full bg-transparent font-num text-purple-600 dark:text-purple-400 font-bold text-sm focus:outline-none">
+          </div>
+          <span class="text-[10px] text-[var(--text-dim)]">Index funds, stocks & debt assets</span>
+        </div>
+
+        <!-- Outstanding Debt Balance -->
+        <div class="p-4 rounded-xl bg-surface-elevated border border-surface-border space-y-1.5 transition-colors hover:border-surface-borderSubtle">
+          <label for="input-bal-debt" class="text-[var(--text-muted)] font-semibold tracking-wide flex items-center justify-between">
+            <span>Total Debt Balance</span>
+            <span class="text-[10px] text-brand-rose font-mono uppercase font-bold">Liabilities</span>
+          </label>
+          <div class="flex items-center gap-1.5 bg-[var(--bg-input)] border border-surface-border px-3 py-1.5 rounded-lg focus-within:border-brand-rose transition">
+            <span class="currency-prefix text-[var(--text-dim)] font-mono font-bold">₹</span>
+            <input type="number" id="input-bal-debt" oninput="updateBalanceSheet('totalDebtBalance', this.value)" class="w-full bg-transparent font-num text-brand-rose font-bold text-sm focus:outline-none">
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-[var(--text-dim)] pt-0.5">
+            <span>Interest rate:</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="input-debt-apr" step="0.5" oninput="updateDebtAPR(this.value)" class="w-12 bg-transparent text-right font-num text-[var(--text-main)] border-b border-surface-border focus:outline-none focus:border-brand-sky font-bold">
+              <span class="font-mono">% APR</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 2: TOP HERO METRIC CARDS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Free Surplus Hero Card -->
+      <div class="p-5 rounded-2xl hairline-card flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-xs text-[var(--text-dim)]">
+            <span class="uppercase tracking-wider font-semibold text-[10px]">Monthly Free Surplus</span>
+            <span id="kpi-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-mint/10 text-brand-mint border border-brand-mint/20">Surplus</span>
+          </div>
+          <div id="kpi-net-surplus" class="text-3xl sm:text-4xl font-display font-bold text-brand-mint font-num mt-3 tracking-tight">+₹0</div>
+        </div>
+        <p class="text-[11px] text-[var(--text-dim)] mt-3 pt-3 border-t border-surface-borderSubtle">Unallocated cash flow ready for allocation</p>
+      </div>
+
+      <!-- Wealth Allocation Rate Hero Card -->
+      <div class="p-5 rounded-2xl hairline-card flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-xs text-[var(--text-dim)]">
+            <span class="uppercase tracking-wider font-semibold text-[10px]">Wealth Allocation Rate</span>
+            <span class="text-[10px] font-mono text-brand-sky px-2 py-0.5 rounded bg-brand-sky/10 border border-brand-sky/20 font-bold">Invest + Save + Debt</span>
+          </div>
+          <div id="kpi-wealth-rate" class="text-3xl sm:text-4xl font-display font-bold text-brand-sky font-num mt-3 tracking-tight">0%</div>
+        </div>
+        <div class="text-[10px] text-[var(--text-dim)] flex justify-between gap-1 pt-3 border-t border-surface-borderSubtle font-mono font-semibold">
+          <span id="rate-split-savings">Cash: 0%</span>
+          <span id="rate-split-invest">Invest: 0%</span>
+          <span id="rate-split-debt">Debt: 0%</span>
+        </div>
+      </div>
+
+      <!-- Emergency Runway Hero Card -->
+      <div class="p-5 rounded-2xl hairline-card flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-xs text-[var(--text-dim)]">
+            <span class="uppercase tracking-wider font-semibold text-[10px]">Emergency Fund Runway</span>
+            <span id="kpi-runway-status" class="text-[10px] font-mono text-brand-amber font-bold">Adequate</span>
+          </div>
+          <div id="kpi-runway" class="text-3xl sm:text-4xl font-display font-bold text-brand-amber font-num mt-3 tracking-tight">0.0 mos</div>
+        </div>
+        <p class="text-[11px] text-[var(--text-dim)] mt-3 pt-3 border-t border-surface-borderSubtle">Liquid Reserve &divide; Fixed Needs (Target: 3–6 mos)</p>
+      </div>
+
+      <!-- 12-Month Net Worth Delta Hero Card -->
+      <div class="p-5 rounded-2xl hairline-card flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-xs text-[var(--text-dim)]">
+            <span class="uppercase tracking-wider font-semibold text-[10px]">12M Projected Net Worth</span>
+            <span id="kpi-portfolio-cagr-badge" class="text-[10px] font-mono text-brand-mint font-bold px-2 py-0.5 rounded bg-brand-mint/10 border border-brand-mint/20">10.2% CAGR</span>
+          </div>
+          <div id="kpi-12m-networth" class="text-3xl sm:text-4xl font-display font-bold text-[var(--text-main)] font-num mt-3 tracking-tight">₹0</div>
+        </div>
+        <p class="text-[11px] text-[var(--text-dim)] mt-3 pt-3 border-t border-surface-borderSubtle">Combined assets minus liabilities in 1 year</p>
+      </div>
+
+    </section>
+
+    <!-- SECTION 3: WHAT-IF SCENARIO DECISION ENGINE -->
+    <section class="p-6 sm:p-8 rounded-3xl whatif-container space-y-6 relative overflow-hidden">
+      <!-- Glow ambient accent -->
+      <div class="absolute -top-24 right-1/4 w-96 h-32 bg-brand-mint/10 blur-3xl pointer-events-none rounded-full"></div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-5 relative z-10">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-mint animate-pulse"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-brand-mint font-mono">Signature Decision Engine</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-elevated text-[var(--text-muted)] border border-surface-border">Live Delta Matrix</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-display font-extrabold text-[var(--text-main)] mt-1">What If Scenario Analyzer</h2>
+          <p class="text-xs text-[var(--text-dim)] mt-1 max-w-2xl">Simulate incremental monthly adjustments and immediately observe your comparative 12-month net worth, savings, and goal trajectory deltas.</p>
+        </div>
+
+        <!-- Quick Scenario Buttons -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <button onclick="setWhatIfShift('save_more')" class="px-3 py-1.5 rounded-xl bg-surface-elevated hover:bg-[var(--bg-card-hover)] text-[var(--text-body)] border border-surface-border transition flex items-center gap-1 font-semibold">
+            <span>+</span> Save More
+          </button>
+          <button onclick="setWhatIfShift('cut_dining')" class="px-3 py-1.5 rounded-xl bg-surface-elevated hover:bg-[var(--bg-card-hover)] text-[var(--text-body)] border border-surface-border transition flex items-center gap-1 font-semibold">
+            <span>-</span> 20% Dining
+          </button>
+          <button onclick="setWhatIfShift('rent_hike')" class="px-3 py-1.5 rounded-xl bg-surface-elevated hover:bg-[var(--bg-card-hover)] text-[var(--text-body)] border border-surface-border transition flex items-center gap-1 font-semibold">
+            <span>+</span> Rent Hike
+          </button>
+          <button onclick="setWhatIfShift('clear')" class="px-3 py-1.5 rounded-xl bg-surface-card text-[var(--text-dim)] hover:text-[var(--text-main)] border border-surface-border transition font-medium">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Slider for What-If Inflow/Savings Adjustment -->
+      <div class="p-5 rounded-2xl whatif-subbox space-y-3 relative z-10">
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-semibold text-[var(--text-main)] flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Simulate Additional Monthly Savings Allocation:
+          </span>
+          <span id="whatif-slider-label" class="font-num text-brand-mint font-bold text-sm bg-brand-mint/10 border border-brand-mint/20 px-3 py-1 rounded-lg">+₹0/mo</span>
+        </div>
+        <input type="range" id="whatif-delta-slider" min="-25000" max="50000" step="500" value="0" oninput="onWhatIfSliderChange(this.value)" class="w-full">
+        <div class="flex justify-between text-[11px] text-[var(--text-dim)] font-mono">
+          <span id="whatif-range-min">-₹25,000</span>
+          <span class="text-[var(--text-dim)] font-sans text-[11px]">Slide left/right to test trade-offs</span>
+          <span id="whatif-range-max">+₹50,000</span>
+        </div>
+      </div>
+
+      <!-- Side-by-Side Comparison Table -->
+      <div class="overflow-x-auto relative z-10">
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr class="border-b border-surface-border text-[var(--text-dim)] text-[11px] uppercase tracking-wider font-semibold">
+              <th class="py-3 px-3">Financial Metric</th>
+              <th class="py-3 px-3">Current Baseline</th>
+              <th class="py-3 px-3 text-brand-mint">Simulated Scenario</th>
+              <th class="py-3 px-3 text-right">Net Impact (Delta)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-border font-num">
+            <tr class="hover:bg-surface-elevated/50 transition">
+              <td class="py-3.5 px-3 text-[var(--text-body)] font-sans font-medium">Monthly Surplus / Deficit</td>
+              <td id="cmp-base-surplus" class="py-3.5 px-3 text-[var(--text-muted)]">₹0</td>
+              <td id="cmp-scen-surplus" class="py-3.5 px-3 text-brand-mint font-bold">₹0</td>
+              <td id="cmp-delta-surplus" class="py-3.5 px-3 text-right font-sans"><span class="px-2.5 py-1 rounded-md text-[10px] font-semibold delta-badge-pos">+₹0/mo</span></td>
+            </tr>
+            <tr class="hover:bg-surface-elevated/50 transition">
+              <td class="py-3.5 px-3 text-[var(--text-body)] font-sans font-medium">12-Month Net Liquid Cash Accumulated</td>
+              <td id="cmp-base-savings12" class="py-3.5 px-3 text-[var(--text-muted)]">₹0</td>
+              <td id="cmp-scen-savings12" class="py-3.5 px-3 text-brand-mint font-bold">₹0</td>
+              <td id="cmp-delta-savings12" class="py-3.5 px-3 text-right font-sans"><span class="px-2.5 py-1 rounded-md text-[10px] font-semibold delta-badge-pos">+₹0/yr</span></td>
+            </tr>
+            <tr class="hover:bg-surface-elevated/50 transition">
+              <td class="py-3.5 px-3 text-[var(--text-body)] font-sans font-medium">Emergency Fund Runway</td>
+              <td id="cmp-base-runway" class="py-3.5 px-3 text-[var(--text-muted)]">0.0 mos</td>
+              <td id="cmp-scen-runway" class="py-3.5 px-3 text-brand-mint font-bold">0.0 mos</td>
+              <td id="cmp-delta-runway" class="py-3.5 px-3 text-right font-sans"><span class="px-2.5 py-1 rounded-md text-[10px] font-semibold delta-badge-pos">+0.0 mos</span></td>
+            </tr>
+            <tr class="hover:bg-surface-elevated/50 transition">
+              <td class="py-3.5 px-3 text-[var(--text-body)] font-sans font-medium">Goal Completion (<span id="cmp-goal-label">Down Payment</span>)</td>
+              <td id="cmp-base-goaldate" class="py-3.5 px-3 text-[var(--text-muted)]">-</td>
+              <td id="cmp-scen-goaldate" class="py-3.5 px-3 text-brand-mint font-bold">-</td>
+              <td id="cmp-delta-goaldate" class="py-3.5 px-3 text-right font-sans"><span class="px-2.5 py-1 rounded-md text-[10px] font-semibold delta-badge-pos">0 mos faster</span></td>
+            </tr>
+            <tr class="hover:bg-surface-elevated/50 transition">
+              <td class="py-3.5 px-3 text-[var(--text-body)] font-sans font-medium">12-Month Projected Total Net Worth</td>
+              <td id="cmp-base-networth" class="py-3.5 px-3 text-[var(--text-muted)]">₹0</td>
+              <td id="cmp-scen-networth" class="py-3.5 px-3 text-brand-mint font-bold">₹0</td>
+              <td id="cmp-delta-networth" class="py-3.5 px-3 text-right font-sans"><span class="px-2.5 py-1 rounded-md text-[10px] font-semibold delta-badge-pos">+₹0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4: TWO-COLUMN MAIN WORKSPACE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- LEFT: CASH FLOW CONTROLS (7 COLS) -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="p-6 rounded-2xl hairline-card space-y-6">
+          <div class="flex items-center justify-between pb-4 border-b border-surface-border">
+            <div>
+              <h2 class="font-display text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
+                <svg class="w-4 h-4 text-brand-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+                Monthly Cash Flow Allocator
+              </h2>
+              <p class="text-[11px] text-[var(--text-dim)] mt-0.5">Adjust take-home earnings, fixed survival needs, and discretionary outlays.</p>
+            </div>
+            <span id="label-income-total" class="text-xs font-num font-bold text-brand-mint px-2.5 py-1 rounded-lg bg-brand-mint/10 border border-brand-mint/20">₹0/mo Inflow</span>
+          </div>
+
+          <!-- Inflow Slider -->
+          <div class="p-4 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <label for="slider-income" class="font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-brand-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Monthly Net Take-Home Pay
+              </label>
+              <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                <input type="number" id="num-income" class="w-24 text-right font-num text-xs font-bold bg-transparent text-brand-mint focus:outline-none">
+              </div>
+            </div>
+            <input type="range" id="slider-income" class="w-full">
+            <div class="flex justify-between text-[10px] text-[var(--text-dim)] font-mono">
+              <span id="range-income-min">₹25,000</span>
+              <span id="range-income-max">₹5,00,000</span>
+            </div>
+          </div>
+
+          <!-- Fixed Needs Sliders -->
+          <div class="space-y-3 pt-3 border-t border-surface-border">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-brand-sky uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Fixed Needs (Essential Survival)
+              </span>
+              <span id="label-needs-total" class="text-xs font-num font-bold text-brand-sky">₹0/mo</span>
+            </div>
+
+            <!-- Rent -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated/70 border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label for="slider-rent" class="font-medium text-[var(--text-body)]">Housing (Rent / Mortgage)</label>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-rent" class="w-20 text-right font-num text-xs bg-transparent text-[var(--text-main)] font-semibold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-rent" class="w-full">
+            </div>
+
+            <!-- Groceries -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated/70 border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label for="slider-groceries" class="font-medium text-[var(--text-body)]">Baseline Groceries & Essentials</label>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-groceries" class="w-20 text-right font-num text-xs bg-transparent text-[var(--text-main)] font-semibold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-groceries" class="w-full">
+            </div>
+
+            <!-- Debt EMI -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated/70 border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label for="slider-debtemi" class="font-medium text-[var(--text-body)]">Minimum Debt EMI / Loan Payment</label>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-debtemi" class="w-20 text-right font-num text-xs bg-transparent text-brand-rose font-bold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-debtemi" class="w-full">
+            </div>
+
+            <!-- Utilities -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated/70 border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label for="slider-utilities" class="font-medium text-[var(--text-body)]">Core Utilities, Wi-Fi & Transit</label>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-utilities" class="w-20 text-right font-num text-xs bg-transparent text-[var(--text-main)] font-semibold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-utilities" class="w-full">
+            </div>
+          </div>
+
+          <!-- Variable Wants Sliders -->
+          <div class="space-y-3 pt-3 border-t border-surface-border">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-brand-amber uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+                Discretionary Wants
+              </span>
+              <span id="label-wants-total" class="text-xs font-num font-bold text-brand-amber">₹0/mo</span>
+            </div>
+
+            <!-- Dining -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated/70 border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label for="slider-dining" class="font-medium text-[var(--text-body)]">Dining Out & Entertainment</label>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-dining" class="w-20 text-right font-num text-xs bg-transparent text-[var(--text-main)] font-semibold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-dining" class="w-full">
+            </div>
+
+            <!-- Shopping -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated/70 border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label for="slider-shopping" class="font-medium text-[var(--text-body)]">Shopping, Apparel & Leisure</label>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-shopping" class="w-20 text-right font-num text-xs bg-transparent text-[var(--text-main)] font-semibold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-shopping" class="w-full">
+            </div>
+
+            <!-- Subscriptions -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated/70 border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <label for="slider-subscriptions" class="font-medium text-[var(--text-body)]">Streaming & Digital Subscriptions</label>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-subscriptions" class="w-20 text-right font-num text-xs bg-transparent text-[var(--text-main)] font-semibold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-subscriptions" class="w-full">
+            </div>
+          </div>
+
+          <!-- Debt Prepayment Accelerator -->
+          <div class="space-y-3 pt-3 border-t border-surface-border">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-brand-rose uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Extra Debt Prepayment
+              </span>
+              <span id="label-prepay-total" class="font-num font-bold text-brand-rose">₹0/mo</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-[var(--text-body)] font-medium">Voluntary Principal Prepayment</span>
+                <div class="flex items-center gap-1 bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-surface-border">
+                  <span class="currency-prefix text-[var(--text-dim)] font-mono text-xs font-bold">₹</span>
+                  <input type="number" id="num-prepay" class="w-20 text-right font-num text-xs bg-transparent text-brand-rose font-bold focus:outline-none">
+                </div>
+              </div>
+              <input type="range" id="slider-prepay" class="w-full">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: VISUAL ANALYTICS & BENCHMARKS (5 COLS) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Doughnut Expenditure Chart -->
+        <div class="p-6 rounded-2xl hairline-card space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">Outflow & Surplus Distribution</h3>
+            <span class="text-[10px] font-mono text-[var(--text-dim)]">Monthly</span>
+          </div>
+
+          <div class="relative h-48 w-full flex items-center justify-center">
+            <canvas id="donutChart"></canvas>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-[11px] text-[var(--text-muted)] pt-3 border-t border-surface-border font-medium">
+            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-brand-sky"></span> Fixed Needs</div>
+            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-brand-amber"></span> Lifestyle Wants</div>
+            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-brand-rose"></span> Extra Prepay</div>
+            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-brand-mint"></span> Free Surplus</div>
+          </div>
+        </div>
+
+        <!-- 50/30/20 REFERENCE BENCHMARK -->
+        <div class="p-6 rounded-2xl hairline-card space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-display text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">50/30/20 Reference Benchmark</h3>
+              <p class="text-[10px] text-[var(--text-dim)] mt-0.5">Guideline: Needs &le;50% | Wants &le;30% | Wealth Rate &ge;20%</p>
+            </div>
+            <span id="benchmark-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-surface-elevated text-[var(--text-muted)] border border-surface-border">Reference Split</span>
+          </div>
+
+          <div class="w-full bg-surface-elevated h-3 rounded-full overflow-hidden flex p-0.5 gap-0.5 border border-surface-border">
+            <div id="bar-seg-needs" class="h-full bg-brand-sky rounded-l-full transition-all duration-300" style="width: 50%"></div>
+            <div id="bar-seg-wants" class="h-full bg-brand-amber transition-all duration-300" style="width: 30%"></div>
+            <div id="bar-seg-savings" class="h-full bg-brand-mint rounded-r-full transition-all duration-300" style="width: 20%"></div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 text-center text-xs">
+            <div class="p-2.5 rounded-xl bg-surface-elevated border border-surface-border">
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Needs</span>
+              <span id="bm-val-needs" class="font-bold font-num text-brand-sky text-sm">0%</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-surface-elevated border border-surface-border">
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Wants</span>
+              <span id="bm-val-wants" class="font-bold font-num text-brand-amber text-sm">0%</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-surface-elevated border border-surface-border">
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Wealth Alloc.</span>
+              <span id="bm-val-savings" class="font-bold font-num text-brand-mint text-sm">0%</span>
+            </div>
+          </div>
+          <p id="benchmark-feedback" class="text-[11px] text-[var(--text-dim)] leading-normal italic">
+            Allocation differs from the 50/30/20 guideline. Custom allocations can be rational depending on your high-interest debt or savings targets.
+          </p>
+        </div>
+
+        <!-- Smart Decision Insights Box -->
+        <div class="p-6 rounded-2xl hairline-card space-y-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <h3 class="font-display text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">Decision Insights</h3>
+          </div>
+          <div id="advice-content-container" class="space-y-2.5 text-xs leading-relaxed text-[var(--text-body)]">
+            <!-- Dynamically populated actionable feedback -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SECTION 5: MILESTONES & LIABILITIES -->
+    <section class="p-6 sm:p-8 rounded-2xl hairline-card space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-border pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-sky" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span class="text-xs font-bold uppercase tracking-wider text-brand-sky font-mono">Milestones & Liabilities</span>
+          </div>
+          <h2 class="text-base font-display font-bold text-[var(--text-main)] mt-1">Target Savings Goal & Debt Paydown Engine</h2>
+          <p class="text-xs text-[var(--text-dim)] mt-0.5">Explicitly set your dedicated monthly goal contribution and track debt elimination payoff timeline.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+        
+        <!-- Milestone Goal Planner -->
+        <div class="p-5 rounded-2xl bg-surface-elevated/60 border border-surface-border space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="font-display font-bold text-[var(--text-main)] text-xs flex items-center gap-2">
+              <svg class="w-4 h-4 text-brand-sky" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+              </svg>
+              Target Milestone Planner
+            </h4>
+            <span id="goal-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono text-brand-sky bg-brand-sky/10 border border-brand-sky/20 font-bold">Active Target</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="input-goal-name" class="text-[10px] text-[var(--text-dim)] uppercase tracking-wider font-semibold block mb-1">Goal Label</label>
+              <input type="text" id="input-goal-name" value="Home Down Payment" oninput="renderApp()" class="w-full bg-[var(--bg-input)] border border-surface-border rounded-xl px-3 py-2 text-xs text-[var(--text-main)] focus:outline-none focus:border-brand-sky font-semibold">
+            </div>
+            <div>
+              <label for="input-goal-target" class="text-[10px] text-[var(--text-dim)] uppercase tracking-wider font-semibold block mb-1">Target Amount</label>
+              <div class="flex items-center gap-1.5 bg-[var(--bg-input)] border border-surface-border rounded-xl px-3 py-2 focus-within:border-brand-sky">
+                <span class="currency-prefix text-[var(--text-dim)] font-mono font-bold">₹</span>
+                <input type="number" id="input-goal-target" value="2500000" oninput="renderApp()" class="w-full bg-transparent text-xs font-num font-bold text-brand-sky focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- Dedicated Monthly Contribution Slider -->
+          <div class="space-y-2 pt-1">
+            <div class="flex justify-between items-center text-xs">
+              <label for="slider-goal-contrib" class="text-[var(--text-body)] font-medium">Dedicated Monthly Contribution:</label>
+              <span id="label-goal-contrib" class="font-num text-brand-sky font-bold text-sm bg-brand-sky/10 border border-brand-sky/20 px-2.5 py-0.5 rounded-md">₹0/mo</span>
+            </div>
+            <input type="range" id="slider-goal-contrib" min="0" max="100000" step="500" value="15000" oninput="updateGoalContribution(this.value)" class="w-full">
+            <div class="flex justify-between text-[10px] text-[var(--text-dim)] font-mono">
+              <span>₹0</span>
+              <span>Slide to dedicate surplus cash</span>
+              <span id="max-goal-contrib-label">₹1,00,000</span>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Projected Completion ETA</span>
+              <strong id="goal-eta-text" class="text-brand-sky font-num font-bold text-sm mt-0.5 block">March 2030 (3.6 yrs)</strong>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Current Goal Fund</span>
+              <span id="goal-starting-amt" class="font-num text-[var(--text-main)] font-bold text-sm mt-0.5 block">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Debt Paydown & Amortization -->
+        <div class="p-5 rounded-2xl bg-surface-elevated/60 border border-surface-border space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="font-display font-bold text-[var(--text-main)] text-xs flex items-center gap-2">
+              <svg class="w-4 h-4 text-brand-rose" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+              </svg>
+              Debt Payoff & Interest Amortization
+            </h4>
+            <span id="debt-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono text-brand-mint bg-brand-mint/10 border border-brand-mint/20 font-bold">Accelerated</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-3 rounded-xl bg-surface-card border border-surface-border">
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Monthly Principal Payment</span>
+              <strong id="debt-monthly-payment" class="font-num text-brand-rose text-sm mt-0.5 block font-bold">₹0/mo</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-surface-card border border-surface-border">
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Monthly Accruing Interest</span>
+              <strong id="debt-monthly-accrued" class="font-num text-brand-amber text-sm mt-0.5 block font-bold">₹0/mo</strong>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-surface-card border border-surface-border flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Debt-Free Projection</span>
+              <strong id="debt-payoff-eta" class="text-brand-mint font-num font-bold text-sm mt-0.5 block">22 Months</strong>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">12-Month Interest Saved</span>
+              <strong id="debt-interest-saved-12m" class="text-brand-sky font-num font-bold text-sm mt-0.5 block">₹0</strong>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-[var(--text-dim)] italic">
+            Amortization incorporates your voluntary prepayment of <span id="debt-prepay-mention" class="text-brand-rose font-num font-bold">₹0/mo</span> to accelerate loan principal reduction.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 6: 12-MONTH FINANCIAL TRAJECTORY -->
+    <section class="p-6 sm:p-8 rounded-2xl hairline-card space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-border pb-4">
+        <div>
+          <h2 class="text-base font-display font-bold text-[var(--text-main)]">12-Month Financial Trajectory</h2>
+          <p class="text-xs text-[var(--text-dim)] mt-0.5">Integrated projection using your custom blended portfolio rate driving liquid wealth, invested portfolio, and debt paydown.</p>
+        </div>
+        <div class="flex items-center gap-4 text-xs font-semibold">
+          <div class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 bg-brand-mint rounded inline-block"></span> Total Net Worth</div>
+          <div class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 bg-brand-sky rounded inline-block"></span> Liquid Reserves</div>
+          <div class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 bg-brand-rose rounded inline-block border-dashed"></span> Debt Balance</div>
+        </div>
+      </div>
+
+      <div class="relative h-64 sm:h-72 w-full pt-2">
+        <canvas id="trajectoryChart"></canvas>
+      </div>
+    </section>
+
+    <!-- SECTION 7: ADVANCED MULTI-YEAR WEALTH MODULE -->
+    <section class="rounded-2xl hairline-card overflow-hidden">
+      
+      <!-- Accordion Header -->
+      <div onclick="toggleAdvancedWealth()" class="p-5 sm:p-6 flex items-center justify-between cursor-pointer hover:bg-surface-elevated transition">
+        <div class="flex items-center gap-3.5">
+          <div class="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-display font-bold text-[var(--text-main)]">Advanced Multi-Year Wealth & Portfolio Projections</h2>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-surface-elevated text-[var(--text-dim)] border border-surface-border">Optional Module</span>
+            </div>
+            <p class="text-[11px] text-[var(--text-dim)] mt-0.5">Simulate long-term asset allocation, annual SIP step-up rates, and optional FIRE independence metrics.</p>
+          </div>
+        </div>
+        <span id="advanced-toggle-icon" class="text-[var(--text-dim)] text-xs font-mono font-bold bg-surface-elevated px-2.5 py-1 rounded-lg border border-surface-border">▼ Expand</span>
+      </div>
+
+      <!-- Collapsible Body -->
+      <div id="advanced-wealth-content" class="hidden p-6 sm:p-8 border-t border-surface-border space-y-6">
+        
+        <!-- Horizon Selector -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-border">
+          <div>
+            <span class="text-xs font-bold text-[var(--text-main)]">Compound Investment Horizon:</span>
+            <p class="text-[10px] text-[var(--text-dim)]">Select multi-year investment forecast period.</p>
+          </div>
+          <div class="flex items-center gap-1.5 p-1 rounded-xl bg-surface-elevated border border-surface-border font-mono">
+            <button onclick="setHorizon(1)" id="btn-hz-1" class="px-3 py-1 text-xs font-semibold rounded-lg text-[var(--text-dim)] hover:text-[var(--text-main)] transition">1Y</button>
+            <button onclick="setHorizon(5)" id="btn-hz-5" class="px-3 py-1 text-xs font-semibold rounded-lg text-[var(--text-dim)] hover:text-[var(--text-main)] transition">5Y</button>
+            <button onclick="setHorizon(10)" id="btn-hz-10" class="px-3 py-1 text-xs font-bold rounded-lg bg-brand-mint text-white dark:text-slate-950 transition">10Y</button>
+            <button onclick="setHorizon(20)" id="btn-hz-20" class="px-3 py-1 text-xs font-semibold rounded-lg text-[var(--text-dim)] hover:text-[var(--text-main)] transition">20Y</button>
+            <button onclick="setHorizon(30)" id="btn-hz-30" class="px-3 py-1 text-xs font-semibold rounded-lg text-[var(--text-dim)] hover:text-[var(--text-main)] transition">30Y</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Asset Allocation Sliders -->
+          <div class="lg:col-span-5 space-y-4 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-[var(--text-main)]">Portfolio Asset Allocation</span>
+              <span id="portfolio-blended-return" class="font-num text-brand-mint font-bold">Blended: 10.2% CAGR</span>
+            </div>
+
+            <!-- Equity -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-[var(--text-main)] font-semibold">Equities & Index Funds</span>
+                <span id="disp-alloc-equity" class="font-num text-brand-mint font-bold">60%</span>
+              </div>
+              <input type="range" id="slider-alloc-equity" min="0" max="100" step="5" value="60" oninput="adjustAssetAllocation('equity', this.value)" class="w-full">
+              <div class="flex items-center justify-between text-[10px] text-[var(--text-dim)]">
+                <span>Illustrative CAGR:</span>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="input-cagr-equity" value="12" step="0.5" oninput="updateCAGR('equity', this.value)" class="w-12 bg-transparent text-right font-num text-brand-mint border-b border-surface-border focus:outline-none font-bold">
+                  <span>%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Debt / Fixed Income -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-[var(--text-main)] font-semibold">Fixed Income & Bonds</span>
+                <span id="disp-alloc-debt" class="font-num text-brand-sky font-bold">25%</span>
+              </div>
+              <input type="range" id="slider-alloc-debt" min="0" max="100" step="5" value="25" oninput="adjustAssetAllocation('debt', this.value)" class="w-full">
+              <div class="flex items-center justify-between text-[10px] text-[var(--text-dim)]">
+                <span>Illustrative CAGR:</span>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="input-cagr-debt" value="7" step="0.5" oninput="updateCAGR('debt', this.value)" class="w-12 bg-transparent text-right font-num text-brand-sky border-b border-surface-border focus:outline-none font-bold">
+                  <span>%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gold / Real Assets -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-[var(--text-main)] font-semibold">Gold & Real Assets</span>
+                <span id="disp-alloc-gold" class="font-num text-brand-amber font-bold">15%</span>
+              </div>
+              <input type="range" id="slider-alloc-gold" min="0" max="100" step="5" value="15" oninput="adjustAssetAllocation('gold', this.value)" class="w-full">
+              <div class="flex items-center justify-between text-[10px] text-[var(--text-dim)]">
+                <span>Illustrative CAGR:</span>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="input-cagr-gold" value="8.5" step="0.5" oninput="updateCAGR('gold', this.value)" class="w-12 bg-transparent text-right font-num text-brand-amber border-b border-surface-border focus:outline-none font-bold">
+                  <span>%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Annual SIP Step-up -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-[var(--text-main)] font-semibold">Annual SIP Contribution Step-Up:</span>
+                <span id="disp-stepup-val" class="font-num text-brand-mint font-bold">+10%/yr</span>
+              </div>
+              <input type="range" id="slider-stepup" min="0" max="25" step="1" value="10" oninput="updateStepUp(this.value)" class="w-full">
+              <span class="text-[10px] text-[var(--text-dim)] block">Models annual salary raise reinvestment</span>
+            </div>
+
+            <!-- Disclaimer Notice -->
+            <div class="p-3 rounded-xl bg-surface-card border border-surface-border text-[10px] text-[var(--text-dim)] leading-normal">
+              <strong class="text-[var(--text-main)]">Simulation Disclosure:</strong> Annual return percentages are illustrative assumptions for simulation purposes only. Actual market returns fluctuate and are never guaranteed.
+            </div>
+          </div>
+
+          <!-- Compound Chart & Stats -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border">
+                <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Projected Portfolio</span>
+                <strong id="stat-projected-corpus" class="text-base font-bold font-num text-brand-mint mt-0.5 block">₹0</strong>
+              </div>
+              <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border">
+                <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Capital Invested</span>
+                <strong id="stat-total-invested" class="text-base font-bold font-num text-brand-sky mt-0.5 block">₹0</strong>
+              </div>
+              <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border">
+                <span class="text-[10px] uppercase tracking-wider text-[var(--text-dim)] block font-semibold">Compound Gain</span>
+                <strong id="stat-compound-gain" class="text-base font-bold font-num text-brand-amber mt-0.5 block">+₹0</strong>
+              </div>
+            </div>
+
+            <div class="relative h-60 w-full p-2 rounded-xl bg-surface-elevated border border-surface-border">
+              <canvas id="longTermWealthChart"></canvas>
+            </div>
+
+            <!-- Optional FIRE Indicator -->
+            <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div>
+                <span class="font-bold text-[var(--text-main)]">Optional F.I.R.E. Reference (25x Annual Outflow)</span>
+                <p class="text-[10px] text-[var(--text-dim)] mt-0.5">Benchmark target: <span id="fire-target-corpus" class="font-num text-brand-mint font-bold">₹0</span></p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span id="fire-progress-pct" class="font-num text-brand-mint font-bold">0% Achieved</span>
+                <span id="fire-badge-eta" class="px-2.5 py-1 rounded-lg text-[10px] font-num font-bold bg-surface-card border border-surface-border text-[var(--text-body)]">--</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- STRESS TEST MODAL -->
+  <div id="stress-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-[var(--bg-card)] w-full max-w-lg rounded-3xl border border-surface-border shadow-2xl p-6 sm:p-7 space-y-5 hairline-card">
+      <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-brand-amber font-mono">Resilience Testing</span>
+          <h3 class="text-base font-display font-bold text-[var(--text-main)] mt-0.5">Financial Stress Test Matrix</h3>
+        </div>
+        <button onclick="toggleStressModal()" class="p-1.5 rounded-xl bg-surface-elevated text-[var(--text-dim)] hover:text-[var(--text-main)] transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-[var(--text-muted)] leading-relaxed">
+        Simulate simultaneous stagflation shocks (living expense surges) combined with salary drops to evaluate emergency survival runway.
+      </p>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-1.5">
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-[var(--text-body)]">Groceries & Utilities Inflation Shock:</span>
+            <span id="disp-shock-inflation" class="font-num text-brand-amber font-bold">+10%</span>
+          </div>
+          <input type="range" id="slider-shock-inflation" min="0" max="30" step="1" value="10" oninput="runStressTestLive()" class="w-full">
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-1.5">
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-[var(--text-body)]">Income Loss / Pay Cut:</span>
+            <span id="disp-shock-income" class="font-num text-brand-rose font-bold">-15%</span>
+          </div>
+          <input type="range" id="slider-shock-income" min="0" max="50" step="5" value="15" oninput="runStressTestLive()" class="w-full">
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-surface-elevated border border-surface-border space-y-2 text-xs">
+        <div class="flex justify-between"><span class="text-[var(--text-dim)]">Stressed Cash Flow:</span><span id="stress-outcome-surplus" class="font-num font-bold text-brand-mint">+₹0</span></div>
+        <div class="flex justify-between"><span class="text-[var(--text-dim)]">Stressed Survival Runway:</span><span id="stress-outcome-runway" class="font-num font-bold text-brand-amber">0.0 mos</span></div>
+        <div class="flex justify-between"><span class="text-[var(--text-dim)]">Resilience Verdict:</span><span id="stress-outcome-verdict" class="font-bold text-brand-mint">Stable</span></div>
+      </div>
+
+      <div class="flex justify-end pt-1">
+        <button onclick="toggleStressModal()" class="px-5 py-2 rounded-xl bg-brand-mint text-white dark:text-slate-950 font-bold text-xs hover:opacity-90 transition">
+          Close Matrix
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* -------------------------------------------------------------
+       FINANCIAL MODEL STATE & ARCHITECTURE (100% PRESERVED)
+       ------------------------------------------------------------- */
+    let currentCurrency = 'INR';
+    let soundEnabled = true;
+    let whatIfShift = 0; // Incremental monthly shift
+    let isAdvancedWealthOpen = false;
+
+    // Currency presets with calibrated balances and ranges
+    const CURRENCY_CONFIG = {
+      INR: {
+        symbol: '₹',
+        code: 'INR',
+        locale: 'en-IN',
+        ranges: {
+          income: { min: 25000, max: 500000, step: 1000 },
+          rent: { min: 5000, max: 150000, step: 500 },
+          groceries: { min: 3000, max: 60000, step: 500 },
+          debtemi: { min: 0, max: 80000, step: 500 },
+          utilities: { min: 1000, max: 20000, step: 250 },
+          dining: { min: 0, max: 40000, step: 500 },
+          shopping: { min: 0, max: 50000, step: 500 },
+          subscriptions: { min: 0, max: 15000, step: 200 },
+          prepay: { min: 0, max: 50000, step: 500 },
+          goalContrib: { min: 0, max: 100000, step: 500 }
+        },
+        defaults: {
+          income: 125000,
+          rent: 30000,
+          groceries: 12000,
+          debtemi: 15000,
+          utilities: 5000,
+          dining: 9000,
+          shopping: 7000,
+          subscriptions: 2500,
+          prepay: 5000,
+          emergencyReserve: 150000,
+          cashSavings: 75000,
+          investedPortfolio: 350000,
+          totalDebtBalance: 280000,
+          debtAPR: 10.5,
+          goalTarget: 2500000,
+          goalMonthlyContrib: 15000
+        }
+      },
+      USD: {
+        symbol: '$',
+        code: 'USD',
+        locale: 'en-US',
+        ranges: {
+          income: { min: 1500, max: 25000, step: 100 },
+          rent: { min: 500, max: 8000, step: 50 },
+          groceries: { min: 200, max: 3000, step: 25 },
+          debtemi: { min: 0, max: 4000, step: 25 },
+          utilities: { min: 50, max: 1000, step: 10 },
+          dining: { min: 50, max: 2500, step: 25 },
+          shopping: { min: 50, max: 3000, step: 25 },
+          subscriptions: { min: 10, max: 500, step: 5 },
+          prepay: { min: 0, max: 2500, step: 25 },
+          goalContrib: { min: 0, max: 5000, step: 50 }
+        },
+        defaults: {
+          income: 6800,
+          rent: 1800,
+          groceries: 600,
+          debtemi: 450,
+          utilities: 250,
+          dining: 450,
+          shopping: 350,
+          subscriptions: 90,
+          prepay: 300,
+          emergencyReserve: 12000,
+          cashSavings: 4500,
+          investedPortfolio: 28000,
+          totalDebtBalance: 18500,
+          debtAPR: 6.5,
+          goalTarget: 60000,
+          goalMonthlyContrib: 800
+        }
+      }
+    };
+
+    // Central application state
+    let state = {
+      ...CURRENCY_CONFIG.INR.defaults,
+      horizonYears: 10,
+      stepUpRate: 10,
+      alloc: { equity: 60, debt: 25, gold: 15 },
+      cagr: { equity: 0.12, debt: 0.07, gold: 0.085 }
+    };
+
+    // Chart handles
+    let chartDonut = null;
+    let chartTrajectory = null;
+    let chartLongTermWealth = null;
+
+    /* -------------------------------------------------------------
+       AUDIO MICRO-INTERACTIONS
+       ------------------------------------------------------------- */
+    let synth = null;
+    function playSoftClick(pitch = 'C5') {
+      if (!soundEnabled) return;
+      try {
+        if (!synth && window.Tone) {
+          synth = new Tone.MembraneSynth({
+            pitchDecay: 0.005,
+            octaves: 1.5,
+            envelope: { attack: 0.001, decay: 0.1, sustain: 0.01, release: 0.1 }
+          }).toDestination();
+          synth.volume.value = -22;
+        }
+        if (window.Tone && Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        if (synth) synth.triggerAttackRelease(pitch, '16n');
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('icon-sound-on').classList.toggle('hidden', !soundEnabled);
+      document.getElementById('icon-sound-off').classList.toggle('hidden', soundEnabled);
+    }
+
+    /* -------------------------------------------------------------
+       CURRENCY FORMATTERS
+       ------------------------------------------------------------- */
+    function formatMoney(amount, forceSign = false) {
+      const cfg = CURRENCY_CONFIG[currentCurrency];
+      const sign = (forceSign && amount > 0) ? '+' : '';
+      const formatted = new Intl.NumberFormat(cfg.locale, {
+        style: 'currency',
+        currency: cfg.code,
+        maximumFractionDigits: 0
+      }).format(Math.abs(amount));
+
+      if (amount < 0) return `-${formatted}`;
+      return `${sign}${formatted}`;
+    }
+
+    /* -------------------------------------------------------------
+       CENTRAL UNIFIED FINANCIAL ENGINE
+       ------------------------------------------------------------- */
+    function calculateEngine(p, whatIfDelta = 0) {
+      const income = Math.max(0, p.income);
+      const needs = (p.rent || 0) + (p.groceries || 0) + (p.debtemi || 0) + (p.utilities || 0);
+      const wants = (p.dining || 0) + (p.shopping || 0) + (p.subscriptions || 0);
+      const prepay = p.prepay || 0;
+      const goalDedication = p.goalMonthlyContrib || 0;
+
+      let surplus = income - (needs + wants + prepay);
+      const scenarioSurplus = surplus + whatIfDelta;
+
+      const blendedCAGR = (
+        (p.alloc.equity / 100) * p.cagr.equity +
+        (p.alloc.debt / 100) * p.cagr.debt +
+        (p.alloc.gold / 100) * p.cagr.gold
+      );
+      const monthlyPortfolioRate = blendedCAGR / 12;
+
+      const runway = needs > 0 ? (p.emergencyReserve / needs) : 0;
+      const cashRetained = Math.max(0, scenarioSurplus);
+      const totalWealthAllocated = cashRetained + prepay;
+      const wealthAllocationRate = income > 0 ? (totalWealthAllocated / income) * 100 : 0;
+
+      const rateCash = income > 0 ? (cashRetained / income) * 100 : 0;
+      const rateInvest = 0;
+      const rateDebt = income > 0 ? (prepay / income) * 100 : 0;
+
+      const pctNeeds = income > 0 ? Math.round((needs / income) * 100) : 0;
+      const pctWants = income > 0 ? Math.round((wants / income) * 100) : 0;
+      const pctWealth = income > 0 ? Math.round((totalWealthAllocated / income) * 100) : 0;
+
+      const monthlyDebtRate = (p.debtAPR / 100) / 12;
+      let runningDebt = p.totalDebtBalance;
+      const monthlyAccruedInterest = runningDebt * monthlyDebtRate;
+      const totalMonthlyDebtPayment = p.debtemi + prepay;
+
+      const isNegativeAmortization = (runningDebt > 0 && totalMonthlyDebtPayment < monthlyAccruedInterest);
+
+      let monthsToDebtFree = 0;
+      let tempDebtForMonths = runningDebt;
+      let debt12MonthInterestAccrued = 0;
+      let baselineDebtInterest12M = 0;
+
+      let baseDebtRunning = runningDebt;
+      for (let m = 1; m <= 12; m++) {
+        if (baseDebtRunning > 0) {
+          const interest = baseDebtRunning * monthlyDebtRate;
+          baselineDebtInterest12M += interest;
+          const principal = Math.max(0, Math.min(baseDebtRunning, p.debtemi - interest));
+          baseDebtRunning = Math.max(0, baseDebtRunning - principal);
+        }
+      }
+
+      const trajectoryData = {
+        months: ['Now', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12'],
+        liquidReserves: [],
+        debt: [],
+        netWorth: []
+      };
+
+      let runningEmergency = p.emergencyReserve;
+      let runningGeneralSavings = p.cashSavings;
+      let runningInvested = p.investedPortfolio;
+      let amortizedDebt = runningDebt;
+
+      trajectoryData.liquidReserves.push(Math.round(runningEmergency + runningGeneralSavings));
+      trajectoryData.debt.push(Math.round(amortizedDebt));
+      trajectoryData.netWorth.push(Math.round(runningEmergency + runningGeneralSavings + runningInvested - amortizedDebt));
+
+      for (let m = 1; m <= 12; m++) {
+        if (scenarioSurplus >= 0) {
+          runningGeneralSavings += scenarioSurplus * 0.4;
+          runningInvested = (runningInvested * (1 + monthlyPortfolioRate)) + (scenarioSurplus * 0.6);
+        } else {
+          let def = Math.abs(scenarioSurplus);
+          if (runningGeneralSavings >= def) {
+            runningGeneralSavings -= def;
+          } else {
+            def -= runningGeneralSavings;
+            runningGeneralSavings = 0;
+            runningEmergency = Math.max(0, runningEmergency - def);
+          }
+          runningInvested = runningInvested * (1 + monthlyPortfolioRate);
+        }
+
+        if (amortizedDebt > 0) {
+          const interest = amortizedDebt * monthlyDebtRate;
+          debt12MonthInterestAccrued += interest;
+          const principal = Math.max(0, Math.min(amortizedDebt, totalMonthlyDebtPayment - interest));
+          amortizedDebt = Math.max(0, amortizedDebt - principal);
+        }
+
+        trajectoryData.liquidReserves.push(Math.round(runningEmergency + runningGeneralSavings));
+        trajectoryData.debt.push(Math.round(amortizedDebt));
+        trajectoryData.netWorth.push(Math.round(runningEmergency + runningGeneralSavings + runningInvested - amortizedDebt));
+      }
+
+      if (!isNegativeAmortization && totalMonthlyDebtPayment > 0 && tempDebtForMonths > 0) {
+        while (tempDebtForMonths > 0 && monthsToDebtFree < 360) {
+          const interest = tempDebtForMonths * monthlyDebtRate;
+          const principal = Math.max(0, Math.min(tempDebtForMonths, totalMonthlyDebtPayment - interest));
+          tempDebtForMonths = Math.max(0, tempDebtForMonths - principal);
+          monthsToDebtFree++;
+        }
+      }
+
+      let goalMonths = 0;
+      const targetGoal = p.goalTarget || 0;
+      let runningGoalSavings = p.cashSavings;
+      const monthlyGoalAddition = Math.min(Math.max(0, scenarioSurplus), goalDedication);
+
+      if (monthlyGoalAddition > 0 && targetGoal > runningGoalSavings) {
+        while (runningGoalSavings < targetGoal && goalMonths < 360) {
+          runningGoalSavings = (runningGoalSavings * (1 + monthlyPortfolioRate * 0.5)) + monthlyGoalAddition;
+          goalMonths++;
+        }
+      }
+
+      const interestSaved12M = Math.max(0, baselineDebtInterest12M - debt12MonthInterestAccrued);
+      const final12MNetWorth = trajectoryData.netWorth[12];
+      const delta12MSavings = (trajectoryData.liquidReserves[12] - (p.emergencyReserve + p.cashSavings));
+
+      return {
+        needs,
+        wants,
+        prepay,
+        surplus,
+        scenarioSurplus,
+        runway,
+        wealthAllocationRate,
+        rateCash,
+        rateInvest,
+        rateDebt,
+        pctNeeds,
+        pctWants,
+        pctWealth,
+        blendedCAGR,
+        monthlyAccruedInterest,
+        isNegativeAmortization,
+        monthsToDebtFree,
+        interestSaved12M,
+        trajectoryData,
+        goalMonths,
+        final12MNetWorth,
+        delta12MSavings
+      };
+    }
+
+    /* -------------------------------------------------------------
+       SLIDERS SETUP & EVENT BINDINGS
+       ------------------------------------------------------------- */
+    const SLIDER_KEYS = [
+      'income', 'rent', 'groceries', 'debtemi', 'utilities',
+      'dining', 'shopping', 'subscriptions', 'prepay'
+    ];
+
+    function setupSliderRanges() {
+      const cfg = CURRENCY_CONFIG[currentCurrency];
+      document.querySelectorAll('.currency-prefix').forEach(el => el.textContent = cfg.symbol);
+
+      SLIDER_KEYS.forEach(key => {
+        const slider = document.getElementById(`slider-${key}`);
+        const num = document.getElementById(`num-${key}`);
+        const r = cfg.ranges[key];
+        if (slider && num && r) {
+          slider.min = r.min;
+          slider.max = r.max;
+          slider.step = r.step;
+          slider.value = state[key];
+          num.value = state[key];
+        }
+      });
+
+      const goalSlider = document.getElementById('slider-goal-contrib');
+      if (goalSlider && cfg.ranges.goalContrib) {
+        goalSlider.min = cfg.ranges.goalContrib.min;
+        goalSlider.max = cfg.ranges.goalContrib.max;
+        goalSlider.step = cfg.ranges.goalContrib.step;
+        goalSlider.value = state.goalMonthlyContrib;
+      }
+      document.getElementById('max-goal-contrib-label').textContent = formatMoney(cfg.ranges.goalContrib.max);
+
+      const whatIfSlider = document.getElementById('whatif-delta-slider');
+      const minVal = currentCurrency === 'INR' ? -30000 : -1000;
+      const maxVal = currentCurrency === 'INR' ? 50000 : 2500;
+      const stepVal = currentCurrency === 'INR' ? 1000 : 50;
+      whatIfSlider.min = minVal;
+      whatIfSlider.max = maxVal;
+      whatIfSlider.step = stepVal;
+      whatIfSlider.value = whatIfShift;
+      document.getElementById('whatif-range-min').textContent = formatMoney(minVal);
+      document.getElementById('whatif-range-max').textContent = formatMoney(maxVal);
+
+      document.getElementById('input-bal-emergency').value = state.emergencyReserve;
+      document.getElementById('input-bal-savings').value = state.cashSavings;
+      document.getElementById('input-bal-investments').value = state.investedPortfolio;
+      document.getElementById('input-bal-debt').value = state.totalDebtBalance;
+      document.getElementById('input-debt-apr').value = state.debtAPR;
+      document.getElementById('input-goal-target').value = state.goalTarget;
+
+      document.getElementById('range-income-min').textContent = formatMoney(cfg.ranges.income.min);
+      document.getElementById('range-income-max').textContent = formatMoney(cfg.ranges.income.max);
+    }
+
+    function bindEvents() {
+      SLIDER_KEYS.forEach(key => {
+        const slider = document.getElementById(`slider-${key}`);
+        const num = document.getElementById(`num-${key}`);
+
+        if (slider && num) {
+          slider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            num.value = val;
+            state[key] = val;
+            playSoftClick('C4');
+            renderApp();
+          });
+
+          num.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            slider.value = val;
+            state[key] = val;
+            renderApp();
+          });
+        }
+      });
+    }
+
+    function updateBalanceSheet(prop, val) {
+      state[prop] = Math.max(0, parseFloat(val) || 0);
+      renderApp();
+    }
+
+    function updateDebtAPR(val) {
+      state.debtAPR = Math.max(0, parseFloat(val) || 0);
+      renderApp();
+    }
+
+    function updateGoalContribution(val) {
+      state.goalMonthlyContrib = Math.max(0, parseFloat(val) || 0);
+      document.getElementById('label-goal-contrib').textContent = `${formatMoney(state.goalMonthlyContrib)}/mo`;
+      renderApp();
+    }
+
+    function updateStepUp(val) {
+      state.stepUpRate = parseFloat(val) || 0;
+      document.getElementById('disp-stepup-val').textContent = `+${state.stepUpRate}%/yr`;
+      renderApp();
+    }
+
+    function updateCAGR(asset, val) {
+      state.cagr[asset] = (parseFloat(val) || 0) / 100;
+      renderApp();
+    }
+
+    /* -------------------------------------------------------------
+       WHAT-IF SCENARIO HANDLERS
+       ------------------------------------------------------------- */
+    function onWhatIfSliderChange(val) {
+      whatIfShift = parseFloat(val) || 0;
+      const sign = whatIfShift > 0 ? '+' : '';
+      document.getElementById('whatif-slider-label').textContent = `${sign}${formatMoney(whatIfShift)}/mo`;
+      playSoftClick('G4');
+      renderApp();
+    }
+
+    function setWhatIfShift(preset) {
+      const slider = document.getElementById('whatif-delta-slider');
+      if (preset === 'save_more') {
+        whatIfShift = currentCurrency === 'INR' ? 10000 : 400;
+      } else if (preset === 'cut_dining') {
+        const cut = state.dining * 0.2;
+        whatIfShift = Math.round(cut);
+      } else if (preset === 'rent_hike') {
+        const hike = currentCurrency === 'INR' ? -5000 : -250;
+        whatIfShift = hike;
+      } else {
+        whatIfShift = 0;
+      }
+      slider.value = whatIfShift;
+      const sign = whatIfShift > 0 ? '+' : '';
+      document.getElementById('whatif-slider-label').textContent = `${sign}${formatMoney(whatIfShift)}/mo`;
+      playSoftClick('E5');
+      renderApp();
+    }
+
+    /* -------------------------------------------------------------
+       PRIMARY APP RENDER PIPELINE
+       ------------------------------------------------------------- */
+    function renderApp() {
+      const baseCalc = calculateEngine(state, 0);
+      const scenCalc = calculateEngine(state, whatIfShift);
+
+      // Header Navigation KPIs
+      document.getElementById('nav-cashflow').textContent = formatMoney(baseCalc.surplus, true);
+      document.getElementById('nav-savings-rate').textContent = `${baseCalc.wealthAllocationRate.toFixed(1)}%`;
+      document.getElementById('nav-runway').textContent = `${baseCalc.runway.toFixed(1)} mos`;
+
+      // Top Metric Cards
+      const kpiSurplus = document.getElementById('kpi-net-surplus');
+      const kpiBadge = document.getElementById('kpi-status-badge');
+      const deficitBanner = document.getElementById('deficit-alert-banner');
+
+      kpiSurplus.textContent = formatMoney(baseCalc.surplus, true);
+      if (baseCalc.surplus >= 0) {
+        kpiSurplus.className = "text-3xl sm:text-4xl font-display font-bold text-brand-mint font-num mt-3 tracking-tight";
+        kpiBadge.textContent = "Surplus";
+        kpiBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-mint/10 text-brand-mint border border-brand-mint/20";
+        deficitBanner.classList.add('hidden');
+      } else {
+        kpiSurplus.className = "text-3xl sm:text-4xl font-display font-bold text-brand-rose font-num mt-3 tracking-tight";
+        kpiBadge.textContent = "Deficit";
+        kpiBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-rose/10 text-brand-rose border border-brand-rose/20";
+        deficitBanner.classList.remove('hidden');
+        document.getElementById('deficit-alert-text').textContent =
+          `Spending exceeds income by ${formatMoney(Math.abs(baseCalc.surplus))}/mo. Capital reserves are being drained.`;
+      }
+
+      // Wealth Allocation Rate
+      document.getElementById('kpi-wealth-rate').textContent = `${baseCalc.wealthAllocationRate.toFixed(1)}%`;
+      document.getElementById('rate-split-savings').textContent = `Cash: ${baseCalc.rateCash.toFixed(0)}%`;
+      document.getElementById('rate-split-debt').textContent = `Prepay: ${baseCalc.rateDebt.toFixed(0)}%`;
+
+      // Runway
+      document.getElementById('kpi-runway').textContent = `${baseCalc.runway.toFixed(1)} mos`;
+      const runwayBadge = document.getElementById('kpi-runway-status');
+      if (baseCalc.runway >= 6) {
+        runwayBadge.textContent = "Robust (6+ mos)";
+        runwayBadge.className = "text-[10px] font-mono text-brand-mint font-bold";
+      } else if (baseCalc.runway >= 3) {
+        runwayBadge.textContent = "Adequate (3–6 mos)";
+        runwayBadge.className = "text-[10px] font-mono text-brand-sky font-bold";
+      } else {
+        runwayBadge.textContent = "Vulnerable (<3 mos)";
+        runwayBadge.className = "text-[10px] font-mono text-brand-amber font-bold";
+      }
+
+      // 12M Net Worth Card
+      document.getElementById('kpi-12m-networth').textContent = formatMoney(baseCalc.final12MNetWorth);
+      document.getElementById('kpi-portfolio-cagr-badge').textContent = `${(baseCalc.blendedCAGR * 100).toFixed(1)}% Blended`;
+
+      // Negative Amortization Banner
+      const amortBanner = document.getElementById('amortization-shortfall-banner');
+      if (baseCalc.isNegativeAmortization) {
+        amortBanner.classList.remove('hidden');
+      } else {
+        amortBanner.classList.add('hidden');
+      }
+
+      // Section Totals
+      document.getElementById('label-income-total').textContent = `${formatMoney(state.income)}/mo Inflow`;
+      document.getElementById('label-needs-total').textContent = `${formatMoney(baseCalc.needs)}/mo`;
+      document.getElementById('label-wants-total').textContent = `${formatMoney(baseCalc.wants)}/mo`;
+      document.getElementById('label-prepay-total').textContent = `${formatMoney(state.prepay)}/mo`;
+
+      // 50/30/20 Reference Benchmark
+      document.getElementById('bar-seg-needs').style.width = `${Math.min(100, baseCalc.pctNeeds)}%`;
+      document.getElementById('bar-seg-wants').style.width = `${Math.min(100, baseCalc.pctWants)}%`;
+      document.getElementById('bar-seg-savings').style.width = `${Math.min(100, baseCalc.pctWealth)}%`;
+
+      document.getElementById('bm-val-needs').textContent = `${baseCalc.pctNeeds}%`;
+      document.getElementById('bm-val-wants').textContent = `${baseCalc.pctWants}%`;
+      document.getElementById('bm-val-savings').textContent = `${baseCalc.pctWealth}%`;
+
+      const bmStatus = document.getElementById('benchmark-status-badge');
+      const bmFeedback = document.getElementById('benchmark-feedback');
+      if (baseCalc.pctNeeds <= 50 && baseCalc.pctWants <= 30 && baseCalc.pctWealth >= 20) {
+        bmStatus.textContent = "Aligns with 50/30/20";
+        bmStatus.className = "px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-brand-mint/10 text-brand-mint border border-brand-mint/20";
+        bmFeedback.textContent = "Your cash flow matches standard guidelines (Needs \u2264 50%, Wants \u2264 30%, Wealth Allocation \u2265 20%).";
+      } else {
+        bmStatus.textContent = "Custom Allocation";
+        bmStatus.className = "px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-brand-sky/10 text-brand-sky border border-brand-sky/20";
+        bmFeedback.textContent = "Your allocation differs from the 50/30/20 reference benchmark. This can be intentional if you are prioritizing high-interest debt elimination or aggressive investing.";
+      }
+
+      renderWhatIfComparison(baseCalc, scenCalc);
+      renderMilestonesAndDebt(baseCalc);
+      updateDonutChart(baseCalc);
+      updateTrajectoryChart(baseCalc.trajectoryData);
+      renderSmartAdvice(baseCalc);
+      renderAdvancedWealth(baseCalc);
+    }
+
+    /* -------------------------------------------------------------
+       WHAT-IF COMPARISON RENDERING
+       ------------------------------------------------------------- */
+    function renderWhatIfComparison(base, scen) {
+      const goalName = document.getElementById('input-goal-name').value || 'Milestone';
+      document.getElementById('cmp-goal-label').textContent = goalName;
+
+      // 1. Monthly Surplus
+      document.getElementById('cmp-base-surplus').textContent = formatMoney(base.surplus, true);
+      document.getElementById('cmp-scen-surplus').textContent = formatMoney(scen.scenarioSurplus, true);
+      const deltaSurplus = scen.scenarioSurplus - base.surplus;
+      const elDeltaSurplus = document.getElementById('cmp-delta-surplus');
+      elDeltaSurplus.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] font-semibold ${deltaSurplus >= 0 ? 'delta-badge-pos' : 'delta-badge-neg'}">${formatMoney(deltaSurplus, true)}/mo</span>`;
+
+      // 2. 12M Cash Accumulated
+      document.getElementById('cmp-base-savings12').textContent = formatMoney(base.delta12MSavings, true);
+      document.getElementById('cmp-scen-savings12').textContent = formatMoney(scen.delta12MSavings, true);
+      const delta12M = scen.delta12MSavings - base.delta12MSavings;
+      const elDelta12 = document.getElementById('cmp-delta-savings12');
+      elDelta12.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] font-semibold ${delta12M >= 0 ? 'delta-badge-pos' : 'delta-badge-neg'}">${formatMoney(delta12M, true)}/yr</span>`;
+
+      // 3. Runway
+      document.getElementById('cmp-base-runway').textContent = `${base.runway.toFixed(1)} mos`;
+      document.getElementById('cmp-scen-runway').textContent = `${scen.runway.toFixed(1)} mos`;
+      const deltaRunway = scen.runway - base.runway;
+      const elDeltaRunway = document.getElementById('cmp-delta-runway');
+      elDeltaRunway.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] font-semibold ${deltaRunway >= 0 ? 'delta-badge-pos' : 'delta-badge-neg'}">${deltaRunway >= 0 ? '+' : ''}${deltaRunway.toFixed(1)} mos</span>`;
+
+      // 4. Goal Completion Date
+      const baseMonths = base.goalMonths;
+      const scenMonths = scen.goalMonths;
+      const elGoalBase = document.getElementById('cmp-base-goaldate');
+      const elGoalScen = document.getElementById('cmp-scen-goaldate');
+      const elGoalDelta = document.getElementById('cmp-delta-goaldate');
+
+      if (baseMonths > 0) {
+        const dBase = new Date(); dBase.setMonth(dBase.getMonth() + baseMonths);
+        elGoalBase.textContent = dBase.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      } else {
+        elGoalBase.textContent = 'Surplus required';
+      }
+
+      if (scenMonths > 0) {
+        const dScen = new Date(); dScen.setMonth(dScen.getMonth() + scenMonths);
+        elGoalScen.textContent = dScen.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      } else {
+        elGoalScen.textContent = 'Surplus required';
+      }
+
+      if (baseMonths > 0 && scenMonths > 0) {
+        const diffMonths = baseMonths - scenMonths;
+        if (diffMonths > 0) {
+          elGoalDelta.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] font-semibold delta-badge-pos">${diffMonths} mos faster \u2191</span>`;
+        } else if (diffMonths < 0) {
+          elGoalDelta.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] font-semibold delta-badge-neg">${Math.abs(diffMonths)} mos slower</span>`;
+        } else {
+          elGoalDelta.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] text-[var(--text-dim)] font-semibold">Identical</span>`;
+        }
+      } else {
+        elGoalDelta.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] text-[var(--text-dim)] font-semibold">--</span>`;
+      }
+
+      // 5. Total Net Worth 12M
+      document.getElementById('cmp-base-networth').textContent = formatMoney(base.final12MNetWorth);
+      document.getElementById('cmp-scen-networth').textContent = formatMoney(scen.final12MNetWorth);
+      const deltaNW = scen.final12MNetWorth - base.final12MNetWorth;
+      const elDeltaNW = document.getElementById('cmp-delta-networth');
+      elDeltaNW.innerHTML = `<span class="px-2.5 py-1 rounded-md text-[10px] font-semibold ${deltaNW >= 0 ? 'delta-badge-pos' : 'delta-badge-neg'}">${formatMoney(deltaNW, true)}</span>`;
+    }
+
+    /* -------------------------------------------------------------
+       MILESTONES & DEBT AMORTIZATION
+       ------------------------------------------------------------- */
+    function renderMilestonesAndDebt(calc) {
+      document.getElementById('label-goal-contrib').textContent = `${formatMoney(state.goalMonthlyContrib)}/mo`;
+      document.getElementById('goal-starting-amt').textContent = formatMoney(state.cashSavings);
+
+      const targetGoal = parseFloat(document.getElementById('input-goal-target').value) || 0;
+      state.goalTarget = targetGoal;
+
+      if (state.goalMonthlyContrib <= 0 || calc.goalMonths <= 0) {
+        document.getElementById('goal-eta-text').textContent = "Requires monthly contribution";
+      } else {
+        const targetDate = new Date();
+        targetDate.setMonth(targetDate.getMonth() + calc.goalMonths);
+        const dateStr = targetDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        document.getElementById('goal-eta-text').textContent = `${dateStr} (${(calc.goalMonths / 12).toFixed(1)} yrs)`;
+      }
+
+      const totalDebtPayment = state.debtemi + state.prepay;
+      document.getElementById('debt-monthly-payment').textContent = `${formatMoney(totalDebtPayment)}/mo`;
+      document.getElementById('debt-monthly-accrued').textContent = `${formatMoney(calc.monthlyAccruedInterest)}/mo`;
+      document.getElementById('debt-prepay-mention').textContent = `${formatMoney(state.prepay)}/mo`;
+      document.getElementById('debt-interest-saved-12m').textContent = formatMoney(calc.interestSaved12M);
+
+      const etaEl = document.getElementById('debt-payoff-eta');
+      if (state.totalDebtBalance <= 0) {
+        etaEl.textContent = "Debt Free!";
+        etaEl.className = "text-brand-mint font-num font-bold text-sm";
+      } else if (calc.isNegativeAmortization) {
+        etaEl.textContent = "Shortfall (EMI < Interest)";
+        etaEl.className = "text-brand-rose font-num font-bold text-sm";
+      } else if (calc.monthsToDebtFree >= 360) {
+        etaEl.textContent = "> 30 Years";
+        etaEl.className = "text-brand-amber font-num font-bold text-sm";
+      } else {
+        const yrs = (calc.monthsToDebtFree / 12).toFixed(1);
+        etaEl.textContent = `${calc.monthsToDebtFree} Months (${yrs} yrs)`;
+        etaEl.className = "text-brand-mint font-num font-bold text-sm";
+      }
+    }
+
+    /* -------------------------------------------------------------
+       ADVANCED WEALTH ENGINE & CHARTS
+       ------------------------------------------------------------- */
+    function toggleAdvancedWealth() {
+      const content = document.getElementById('advanced-wealth-content');
+      const icon = document.getElementById('advanced-toggle-icon');
+      isAdvancedWealthOpen = !isAdvancedWealthOpen;
+      content.classList.toggle('hidden', !isAdvancedWealthOpen);
+      icon.textContent = isAdvancedWealthOpen ? '▲ Collapse' : '▼ Expand';
+      if (isAdvancedWealthOpen) {
+        renderApp();
+      }
+    }
+
+    function setHorizon(y) {
+      state.horizonYears = y;
+      [1, 5, 10, 20, 30].forEach(val => {
+        const btn = document.getElementById(`btn-hz-${val}`);
+        if (btn) {
+          btn.className = (val === y)
+            ? "px-3 py-1 text-xs font-bold rounded-lg bg-brand-mint text-white dark:text-slate-950 transition"
+            : "px-3 py-1 text-xs font-semibold rounded-lg text-[var(--text-dim)] hover:text-[var(--text-main)] transition";
+        }
+      });
+      playSoftClick('A5');
+      renderApp();
+    }
+
+    function adjustAssetAllocation(changedAsset, val) {
+      val = parseInt(val, 10) || 0;
+      state.alloc[changedAsset] = val;
+
+      const otherKeys = Object.keys(state.alloc).filter(k => k !== changedAsset);
+      const remaining = Math.max(0, 100 - val);
+      const sumOthers = state.alloc[otherKeys[0]] + state.alloc[otherKeys[1]];
+
+      if (sumOthers > 0) {
+        state.alloc[otherKeys[0]] = Math.round(remaining * (state.alloc[otherKeys[0]] / sumOthers));
+        state.alloc[otherKeys[1]] = remaining - state.alloc[otherKeys[0]];
+      } else {
+        state.alloc[otherKeys[0]] = Math.round(remaining / 2);
+        state.alloc[otherKeys[1]] = remaining - state.alloc[otherKeys[0]];
+      }
+
+      document.getElementById('slider-alloc-equity').value = state.alloc.equity;
+      document.getElementById('slider-alloc-debt').value = state.alloc.debt;
+      document.getElementById('slider-alloc-gold').value = state.alloc.gold;
+
+      document.getElementById('disp-alloc-equity').textContent = `${state.alloc.equity}%`;
+      document.getElementById('disp-alloc-debt').textContent = `${state.alloc.debt}%`;
+      document.getElementById('disp-alloc-gold').textContent = `${state.alloc.gold}%`;
+
+      playSoftClick('G4');
+      renderApp();
+    }
+
+    function renderAdvancedWealth(calc) {
+      const blendedPct = (calc.blendedCAGR * 100).toFixed(1);
+      document.getElementById('portfolio-blended-return').textContent = `Blended: ${blendedPct}% CAGR`;
+
+      const years = state.horizonYears;
+      const stepUp = state.stepUpRate / 100;
+      const monthlyRate = calc.blendedCAGR / 12;
+
+      let runningInvested = state.investedPortfolio;
+      let totalOutflow = state.investedPortfolio;
+      let monthlyInvestment = Math.max(0, calc.surplus * 0.6);
+
+      const labels = ['Now'];
+      const investedData = [Math.round(totalOutflow)];
+      const corpusData = [Math.round(runningInvested)];
+
+      for (let y = 1; y <= years; y++) {
+        for (let m = 1; m <= 12; m++) {
+          runningInvested = (runningInvested * (1 + monthlyRate)) + monthlyInvestment;
+          totalOutflow += monthlyInvestment;
+        }
+        monthlyInvestment *= (1 + stepUp);
+        labels.push(`Y${y}`);
+        investedData.push(Math.round(totalOutflow));
+        corpusData.push(Math.round(runningInvested));
+      }
+
+      document.getElementById('stat-projected-corpus').textContent = formatMoney(runningInvested);
+      document.getElementById('stat-total-invested').textContent = formatMoney(totalOutflow);
+      document.getElementById('stat-compound-gain').textContent = formatMoney(Math.max(0, runningInvested - totalOutflow), true);
+
+      const annualExpenses = (calc.needs + calc.wants) * 12;
+      const fireTarget = annualExpenses * 25;
+      document.getElementById('fire-target-corpus').textContent = formatMoney(fireTarget);
+
+      const fireProgress = Math.min(100, ((state.investedPortfolio + state.cashSavings) / (fireTarget || 1)) * 100);
+      document.getElementById('fire-progress-pct').textContent = `${fireProgress.toFixed(1)}% Achieved`;
+
+      const fireYearsEst = (monthlyInvestment > 0 && fireTarget > runningInvested)
+        ? Math.max(1, Math.round((fireTarget - runningInvested) / (monthlyInvestment * 12 * (1 + calc.blendedCAGR))))
+        : 0;
+      document.getElementById('fire-badge-eta').textContent = fireYearsEst > 0 ? `~${fireYearsEst} yrs to 25x` : "Achieved";
+
+      updateLongTermWealthChart(labels, investedData, corpusData);
+    }
+
+    /* -------------------------------------------------------------
+       DYNAMIC SMART ADVICE ENGINE
+       ------------------------------------------------------------- */
+    function renderSmartAdvice(calc) {
+      const container = document.getElementById('advice-content-container');
+      const tips = [];
+
+      const housingRatio = (state.rent / (state.income || 1)) * 100;
+      if (housingRatio > 35) {
+        tips.push(`
+          <div class="p-3 rounded-xl bg-brand-amber/10 border border-brand-amber/25 text-brand-amber">
+            <strong class="font-bold">Housing Load (${housingRatio.toFixed(0)}%):</strong> Housing exceeds the recommended 30% ceiling. Trimming housing or sharing utilities could redirect vital cash flow into your emergency buffer.
+          </div>
+        `);
+      }
+
+      if (calc.isNegativeAmortization) {
+        tips.push(`
+          <div class="p-3 rounded-xl bg-brand-rose/10 border border-brand-rose/25 text-brand-rose">
+            <strong class="font-bold">Negative Amortization Warning:</strong> Monthly loan payment of ${formatMoney(state.debtemi + state.prepay)} does not cover accrued monthly interest (${formatMoney(calc.monthlyAccruedInterest)}). Increase prepayment immediately.
+          </div>
+        `);
+      }
+
+      if (calc.runway < 3) {
+        tips.push(`
+          <div class="p-3 rounded-xl bg-brand-amber/10 border border-brand-amber/25 text-brand-amber">
+            <strong class="font-bold">Emergency Cushion Alert:</strong> Liquid reserves only cover <strong>${calc.runway.toFixed(1)} months</strong> of essential survival needs. Financial planners recommend targeting 3–6 months (${formatMoney(calc.needs * 3)}).
+          </div>
+        `);
+      } else {
+        tips.push(`
+          <div class="p-3 rounded-xl bg-brand-mint/10 border border-brand-mint/25 text-brand-mint">
+            <strong class="font-bold">Safety Reserve Intact:</strong> You maintain <strong>${calc.runway.toFixed(1)} months</strong> of fixed survival runway. Your foundation is stable to pursue long-term asset investments.
+          </div>
+        `);
+      }
+
+      container.innerHTML = tips.join('');
+    }
+
+    /* -------------------------------------------------------------
+       CHART.JS VISUAL ANALYTICS SETUP
+       ------------------------------------------------------------- */
+    function getChartThemeColors() {
+      const isDark = document.documentElement.classList.contains('dark');
+      return {
+        grid: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(15, 23, 42, 0.06)',
+        ticks: isDark ? '#64748B' : '#475569',
+        tooltipBg: isDark ? '#171B29' : '#0F172A',
+        tooltipBorder: isDark ? '#202637' : 'rgba(15, 23, 42, 0.1)',
+        tooltipTitle: '#FFFFFF',
+        tooltipBody: '#E2E8F0',
+        donutBorder: isDark ? '#0F121C' : '#FFFFFF'
+      };
+    }
+
+    function updateDonutChart(calc) {
+      const ctx = document.getElementById('donutChart').getContext('2d');
+      const tc = getChartThemeColors();
+      const labels = ['Fixed Needs', 'Lifestyle Wants', 'Extra Prepay'];
+      const data = [calc.needs, calc.wants, calc.prepay];
+      const colors = ['#0284C7', '#D97706', '#E11D48'];
+
+      if (calc.surplus > 0) {
+        labels.push('Free Surplus');
+        data.push(calc.surplus);
+        colors.push('#059669');
+      }
+
+      if (!chartDonut) {
+        chartDonut = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: colors,
+              borderWidth: 2.5,
+              borderColor: tc.donutBorder,
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '72%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: tc.tooltipBg,
+                titleColor: tc.tooltipTitle,
+                bodyColor: tc.tooltipBody,
+                borderColor: tc.tooltipBorder,
+                borderWidth: 1,
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: {
+                  label: (ctx) => ` ${ctx.label}: ${formatMoney(ctx.raw)}`
+                }
+              }
+            }
+          }
+        });
+      } else {
+        chartDonut.data.labels = labels;
+        chartDonut.data.datasets[0].data = data;
+        chartDonut.data.datasets[0].backgroundColor = colors;
+        chartDonut.data.datasets[0].borderColor = tc.donutBorder;
+        chartDonut.options.plugins.tooltip.backgroundColor = tc.tooltipBg;
+        chartDonut.options.plugins.tooltip.borderColor = tc.tooltipBorder;
+        chartDonut.update();
+      }
+    }
+
+    function updateTrajectoryChart(traj) {
+      const ctx = document.getElementById('trajectoryChart').getContext('2d');
+      const tc = getChartThemeColors();
+
+      if (!chartTrajectory) {
+        chartTrajectory = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: traj.months,
+            datasets: [
+              {
+                label: 'Total Net Worth',
+                data: traj.netWorth,
+                borderColor: '#059669',
+                backgroundColor: 'rgba(5, 150, 105, 0.08)',
+                fill: true,
+                tension: 0.25,
+                borderWidth: 2,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                pointBackgroundColor: '#059669'
+              },
+              {
+                label: 'Liquid Cash Reserves',
+                data: traj.liquidReserves,
+                borderColor: '#0284C7',
+                tension: 0.2,
+                borderWidth: 1.5,
+                pointRadius: 1.5,
+                pointHoverRadius: 4,
+                pointBackgroundColor: '#0284C7'
+              },
+              {
+                label: 'Debt Balance',
+                data: traj.debt,
+                borderColor: '#E11D48',
+                borderDash: [4, 4],
+                tension: 0.2,
+                borderWidth: 1.5,
+                pointRadius: 1.5,
+                pointHoverRadius: 4,
+                pointBackgroundColor: '#E11D48'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: tc.tooltipBg,
+                borderColor: tc.tooltipBorder,
+                titleColor: tc.tooltipTitle,
+                bodyColor: tc.tooltipBody,
+                borderWidth: 1,
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: {
+                  label: (ctx) => ` ${ctx.dataset.label}: ${formatMoney(ctx.raw)}`
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: tc.grid },
+                ticks: { color: tc.ticks, font: { family: 'JetBrains Mono', size: 10 } }
+              },
+              y: {
+                grid: { color: tc.grid },
+                ticks: {
+                  color: tc.ticks,
+                  font: { family: 'JetBrains Mono', size: 10 },
+                  callback: (val) => formatMoney(val)
+                }
+              }
+            }
+          }
+        });
+      } else {
+        chartTrajectory.data.labels = traj.months;
+        chartTrajectory.data.datasets[0].data = traj.netWorth;
+        chartTrajectory.data.datasets[1].data = traj.liquidReserves;
+        chartTrajectory.data.datasets[2].data = traj.debt;
+        chartTrajectory.options.scales.x.grid.color = tc.grid;
+        chartTrajectory.options.scales.y.grid.color = tc.grid;
+        chartTrajectory.options.scales.x.ticks.color = tc.ticks;
+        chartTrajectory.options.scales.y.ticks.color = tc.ticks;
+        chartTrajectory.options.plugins.tooltip.backgroundColor = tc.tooltipBg;
+        chartTrajectory.options.plugins.tooltip.borderColor = tc.tooltipBorder;
+        chartTrajectory.update();
+      }
+    }
+
+    function updateLongTermWealthChart(labels, invested, corpus) {
+      const canvas = document.getElementById('longTermWealthChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const tc = getChartThemeColors();
+
+      if (!chartLongTermWealth) {
+        chartLongTermWealth = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Projected Corpus',
+                data: corpus,
+                borderColor: '#059669',
+                backgroundColor: 'rgba(5, 150, 105, 0.08)',
+                fill: true,
+                tension: 0.25,
+                borderWidth: 2,
+                pointRadius: 2,
+                pointHoverRadius: 4
+              },
+              {
+                label: 'Principal Invested',
+                data: invested,
+                borderColor: '#0284C7',
+                tension: 0.2,
+                borderWidth: 1.5,
+                pointRadius: 1.5,
+                pointHoverRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: tc.tooltipBg,
+                borderColor: tc.tooltipBorder,
+                titleColor: tc.tooltipTitle,
+                bodyColor: tc.tooltipBody,
+                borderWidth: 1,
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: {
+                  label: (ctx) => ` ${ctx.dataset.label}: ${formatMoney(ctx.raw)}`
+                }
+              }
+            },
+            scales: {
+              x: { grid: { color: tc.grid }, ticks: { color: tc.ticks, font: { family: 'JetBrains Mono', size: 9 } } },
+              y: {
+                grid: { color: tc.grid },
+                ticks: { color: tc.ticks, font: { family: 'JetBrains Mono', size: 9 }, callback: (v) => formatMoney(v) }
+              }
+            }
+          }
+        });
+      } else {
+        chartLongTermWealth.data.labels = labels;
+        chartLongTermWealth.data.datasets[0].data = corpus;
+        chartLongTermWealth.data.datasets[1].data = invested;
+        chartLongTermWealth.options.scales.x.grid.color = tc.grid;
+        chartLongTermWealth.options.scales.y.grid.color = tc.grid;
+        chartLongTermWealth.options.scales.x.ticks.color = tc.ticks;
+        chartLongTermWealth.options.scales.y.ticks.color = tc.ticks;
+        chartLongTermWealth.options.plugins.tooltip.backgroundColor = tc.tooltipBg;
+        chartLongTermWealth.options.plugins.tooltip.borderColor = tc.tooltipBorder;
+        chartLongTermWealth.update();
+      }
+    }
+
+    /* -------------------------------------------------------------
+       ARCHETYPES, AUTO-BALANCE & CURRENCY
+       ------------------------------------------------------------- */
+    function setCurrency(cur) {
+      if (currentCurrency === cur) return;
+      currentCurrency = cur;
+
+      document.getElementById('curr-btn-usd').className = cur === 'USD'
+        ? 'px-3 py-1 rounded-lg transition bg-brand-mint text-white dark:text-slate-950 font-bold font-mono'
+        : 'px-3 py-1 rounded-lg transition text-[var(--text-muted)] hover:text-[var(--text-main)] font-mono';
+
+      document.getElementById('curr-btn-inr').className = cur === 'INR'
+        ? 'px-3 py-1 rounded-lg transition bg-brand-mint text-white dark:text-slate-950 font-bold font-mono'
+        : 'px-3 py-1 rounded-lg transition text-[var(--text-muted)] hover:text-[var(--text-main)] font-mono';
+
+      state = {
+        ...CURRENCY_CONFIG[cur].defaults,
+        horizonYears: state.horizonYears || 10,
+        stepUpRate: state.stepUpRate || 10,
+        alloc: state.alloc || { equity: 60, debt: 25, gold: 15 },
+        cagr: state.cagr || { equity: 0.12, debt: 0.07, gold: 0.085 }
+      };
+
+      whatIfShift = 0;
+      setupSliderRanges();
+      renderApp();
+    }
+
+    const ARCHETYPES = {
+      INR: {
+        frugal: { income: 110000, rent: 18000, groceries: 8000, debtemi: 5000, utilities: 3500, dining: 3500, shopping: 3000, subscriptions: 1000, prepay: 15000 },
+        urban_pro: { income: 160000, rent: 55000, groceries: 14000, debtemi: 12000, utilities: 6500, dining: 18000, shopping: 15000, subscriptions: 4000, prepay: 2000 },
+        debt_crusher: { income: 125000, rent: 24000, groceries: 10000, debtemi: 22000, utilities: 4500, dining: 4000, shopping: 3000, subscriptions: 1200, prepay: 35000 },
+        balanced_50_30_20: { income: 120000, rent: 30000, groceries: 12000, debtemi: 12000, utilities: 6000, dining: 16000, shopping: 14000, subscriptions: 6000, prepay: 5000 }
+      },
+      USD: {
+        frugal: { income: 6000, rent: 1200, groceries: 400, debtemi: 200, utilities: 180, dining: 150, shopping: 120, subscriptions: 40, prepay: 1200 },
+        urban_pro: { income: 9500, rent: 3400, groceries: 750, debtemi: 400, utilities: 300, dining: 950, shopping: 800, subscriptions: 180, prepay: 250 },
+        debt_crusher: { income: 7000, rent: 1600, groceries: 500, debtemi: 800, utilities: 250, dining: 200, shopping: 150, subscriptions: 50, prepay: 1800 },
+        balanced_50_30_20: { income: 7000, rent: 2100, groceries: 650, debtemi: 500, utilities: 250, dining: 850, shopping: 850, subscriptions: 400, prepay: 400 }
+      }
+    };
+
+    function applyArchetype(type) {
+      const arch = ARCHETYPES[currentCurrency][type];
+      if (!arch) return;
+      Object.assign(state, arch);
+      SLIDER_KEYS.forEach(k => {
+        const slider = document.getElementById(`slider-${k}`);
+        const num = document.getElementById(`num-${k}`);
+        if (slider && num) {
+          slider.value = state[k];
+          num.value = state[k];
+        }
+      });
+      playSoftClick('C6');
+      renderApp();
+    }
+
+    function autoBalanceDeficit() {
+      const calc = calculateEngine(state, 0);
+      if (calc.surplus >= 0) return;
+
+      const deficit = Math.abs(calc.surplus);
+      const totalWants = state.dining + state.shopping + state.subscriptions;
+      if (totalWants > deficit) {
+        const factor = (totalWants - deficit) / totalWants;
+        state.dining = Math.round(state.dining * factor);
+        state.shopping = Math.round(state.shopping * factor);
+        state.subscriptions = Math.round(state.subscriptions * factor);
+      } else {
+        state.dining = 0;
+        state.shopping = 0;
+        state.subscriptions = 0;
+        state.prepay = Math.max(0, state.prepay - (deficit - totalWants));
+      }
+
+      SLIDER_KEYS.forEach(k => {
+        const slider = document.getElementById(`slider-${k}`);
+        const num = document.getElementById(`num-${k}`);
+        if (slider && num) {
+          slider.value = state[k];
+          num.value = state[k];
+        }
+      });
+      playSoftClick('A5');
+      renderApp();
+    }
+
+    function resetDefaults() {
+      state = { ...CURRENCY_CONFIG[currentCurrency].defaults };
+      whatIfShift = 0;
+      setupSliderRanges();
+      playSoftClick('F4');
+      renderApp();
+    }
+
+    /* -------------------------------------------------------------
+       STRESS TEST SCENARIO MATRIX
+       ------------------------------------------------------------- */
+    function toggleStressModal() {
+      const modal = document.getElementById('stress-modal');
+      modal.classList.toggle('hidden');
+      if (!modal.classList.contains('hidden')) {
+        runStressTestLive();
+      }
+    }
+
+    function runStressTestLive() {
+      const inflation = parseFloat(document.getElementById('slider-shock-inflation').value) || 0;
+      const incomeDrop = parseFloat(document.getElementById('slider-shock-income').value) || 0;
+
+      document.getElementById('disp-shock-inflation').textContent = `+${inflation}%`;
+      document.getElementById('disp-shock-income').textContent = `-${incomeDrop}%`;
+
+      const stressedState = { ...state };
+      stressedState.income = Math.round(state.income * (1 - (incomeDrop / 100)));
+      stressedState.groceries = Math.round(state.groceries * (1 + (inflation / 100)));
+      stressedState.utilities = Math.round(state.utilities * (1 + (inflation / 100)));
+
+      const stressedCalc = calculateEngine(stressedState, 0);
+
+      const surplusEl = document.getElementById('stress-outcome-surplus');
+      surplusEl.textContent = formatMoney(stressedCalc.surplus, true);
+      surplusEl.className = stressedCalc.surplus >= 0 ? "font-num font-bold text-brand-mint" : "font-num font-bold text-brand-rose";
+
+      document.getElementById('stress-outcome-runway').textContent = `${stressedCalc.runway.toFixed(1)} mos`;
+
+      const verdictEl = document.getElementById('stress-outcome-verdict');
+      if (stressedCalc.surplus >= 0 && stressedCalc.runway >= 4) {
+        verdictEl.textContent = "High Resilience Fortress";
+        verdictEl.className = "font-bold text-brand-mint";
+      } else if (stressedCalc.surplus >= 0 || stressedCalc.runway >= 2.5) {
+        verdictEl.textContent = "Moderate - Vulnerable to Extended Shock";
+        verdictEl.className = "font-bold text-brand-amber";
+      } else {
+        verdictEl.textContent = "Critical - Immediate Buffer Depletion";
+        verdictEl.className = "font-bold text-brand-rose";
+      }
+    }
+
+    /* -------------------------------------------------------------
+       THEME TOGGLE & EXPORT
+       ------------------------------------------------------------- */
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      const isDark = html.classList.contains('dark');
+      document.getElementById('icon-theme-sun').classList.toggle('hidden', isDark);
+      document.getElementById('icon-theme-moon').classList.toggle('hidden', !isDark);
+
+      renderApp();
+    }
+
+    function exportFinancialBrief() {
+      const calc = calculateEngine(state, 0);
+      const brief = `=== MONEYLENS FINANCIAL BRIEF ===
+Currency: ${currentCurrency}
+Net Inflow: ${formatMoney(state.income)}/mo
+Fixed Needs: ${formatMoney(calc.needs)}/mo (${calc.pctNeeds}%)
+Lifestyle Wants: ${formatMoney(calc.wants)}/mo (${calc.pctWants}%)
+Debt Prepayment: ${formatMoney(state.prepay)}/mo
+Net Monthly Surplus: ${formatMoney(calc.surplus)}/mo
+Wealth Allocation Rate: ${calc.wealthAllocationRate.toFixed(1)}%
+Emergency Reserve Runway: ${calc.runway.toFixed(1)} months
+12-Month Net Worth Target: ${formatMoney(calc.final12MNetWorth)}
+Simulated What-If Shift: ${formatMoney(whatIfShift, true)}/mo`;
+
+      const el = document.createElement('textarea');
+      el.value = brief;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      playSoftClick('C6');
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-xl bg-brand-mint text-white dark:text-slate-950 font-bold text-xs shadow-xl flex items-center gap-2 border border-brand-mint/40';
+      toast.innerHTML = '<svg class="w-4 h-4 text-white dark:text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <span>Copied MoneyLens financial brief to clipboard!</span>';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+
+    /* -------------------------------------------------------------
+       INITIALIZATION
+       ------------------------------------------------------------- */
+    window.addEventListener('DOMContentLoaded', () => {
+      setupSliderRanges();
+      bindEvents();
+      renderApp();
+    });
+  </script>
+</body>
+</html>
